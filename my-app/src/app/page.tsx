@@ -1,101 +1,96 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)] bg-gradient-to-r from-indigo-100 via-blue-200 to-green-200">
+      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start max-w-4xl w-full">
+        {/* App Logo */}
         <Image
           className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
+          src="/logo.svg" // Replace with your app logo
+          alt="LinguaLoop logo"
+          width={220}
+          height={50}
           priority
         />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+        {/* Tagline */}
+        <h1 className="text-4xl font-extrabold text-center sm:text-left text-indigo-800 mb-4">
+          Welcome to LinguaLoop
+        </h1>
+        <p className="text-lg text-gray-700 text-center sm:text-left mb-6 max-w-xl">
+          Master new languages through practice, quizzes, games, and interactive features, all in one app.
+        </p>
+
+        {/* Main Menu Buttons */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-8 w-full">
+          <Link href="/practice">
+            <button className="bg-blue-600 text-white hover:bg-blue-700 transition-all font-bold text-lg sm:text-xl py-6 px-12 rounded-xl shadow-lg hover:scale-105 transform hover:translate-y-1 relative overflow-hidden">
+              <Image
+                src="/practice-bg.jpg" // Replace with your own background image
+                alt="Practice"
+                layout="fill"
+                objectFit="cover"
+                className="absolute inset-0 opacity-30"
+              />
+              Practice
+            </button>
+          </Link>
+
+          <Link href="/quiz">
+            <button className="bg-green-600 text-white hover:bg-green-700 transition-all font-bold text-lg sm:text-xl py-6 px-12 rounded-xl shadow-lg hover:scale-105 transform hover:translate-y-1 relative overflow-hidden">
+              <Image
+                src="/quiz-bg.jpg" // Replace with your own background image
+                alt="Quiz"
+                layout="fill"
+                objectFit="cover"
+                className="absolute inset-0 opacity-30"
+              />
+              Quiz
+            </button>
+          </Link>
+
+          <Link href="/games">
+            <button className="bg-yellow-600 text-white hover:bg-yellow-700 transition-all font-bold text-lg sm:text-xl py-6 px-12 rounded-xl shadow-lg hover:scale-105 transform hover:translate-y-1 relative overflow-hidden">
+              <Image
+                src="/games-bg.jpg" // Replace with your own background image
+                alt="Games"
+                layout="fill"
+                objectFit="cover"
+                className="absolute inset-0 opacity-30"
+              />
+              Games
+            </button>
+          </Link>
+
+          <Link href="/about">
+            <button className="bg-gray-600 text-white hover:bg-gray-700 transition-all font-bold text-lg sm:text-xl py-6 px-12 rounded-xl shadow-lg hover:scale-105 transform hover:translate-y-1 relative overflow-hidden">
+              <Image
+                src="/about-bg.jpg" // Replace with your own background image
+                alt="About"
+                layout="fill"
+                objectFit="cover"
+                className="absolute inset-0 opacity-30"
+              />
+              About
+            </button>
+          </Link>
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
+
+      {/* Footer */}
+      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center text-sm text-gray-600 mt-16">
+        <a className="hover:underline" href="/privacy">Privacy</a>
+        <a className="hover:underline" href="/terms">Terms</a>
         <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+          className="flex items-center gap-1 hover:underline"
+          href="https://github.com/your-repo"
           target="_blank"
           rel="noopener noreferrer"
         >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
+          <Image src="/github.svg" alt="GitHub icon" width={16} height={16} />
+          GitHub
         </a>
       </footer>
     </div>
