@@ -28,52 +28,28 @@ export default function Home() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-8 w-full">
           <Link href="/practice">
             <button className="bg-blue-600 text-white hover:bg-blue-700 transition-all font-bold text-lg sm:text-xl py-6 px-12 rounded-xl shadow-lg hover:scale-105 transform hover:translate-y-1 relative overflow-hidden">
-              <Image
-                src="/practice-bg.jpg" // Replace with your own background image
-                alt="Practice"
-                layout="fill"
-                objectFit="cover"
-                className="absolute inset-0 opacity-30"
-              />
+            
               Practice
             </button>
           </Link>
 
           <Link href="/quiz">
             <button className="bg-green-600 text-white hover:bg-green-700 transition-all font-bold text-lg sm:text-xl py-6 px-12 rounded-xl shadow-lg hover:scale-105 transform hover:translate-y-1 relative overflow-hidden">
-              <Image
-                src="/quiz-bg.jpg" // Replace with your own background image
-                alt="Quiz"
-                layout="fill"
-                objectFit="cover"
-                className="absolute inset-0 opacity-30"
-              />
+
               Quiz
             </button>
           </Link>
 
           <Link href="/games">
             <button className="bg-yellow-600 text-white hover:bg-yellow-700 transition-all font-bold text-lg sm:text-xl py-6 px-12 rounded-xl shadow-lg hover:scale-105 transform hover:translate-y-1 relative overflow-hidden">
-              <Image
-                src="/games-bg.jpg" // Replace with your own background image
-                alt="Games"
-                layout="fill"
-                objectFit="cover"
-                className="absolute inset-0 opacity-30"
-              />
+              
               Games
             </button>
           </Link>
 
           <Link href="/about">
             <button className="bg-gray-600 text-white hover:bg-gray-700 transition-all font-bold text-lg sm:text-xl py-6 px-12 rounded-xl shadow-lg hover:scale-105 transform hover:translate-y-1 relative overflow-hidden">
-              <Image
-                src="/about-bg.jpg" // Replace with your own background image
-                alt="About"
-                layout="fill"
-                objectFit="cover"
-                className="absolute inset-0 opacity-30"
-              />
+              
               About
             </button>
           </Link>
