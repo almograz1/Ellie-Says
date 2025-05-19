@@ -8,38 +8,38 @@ import { usePathname } from 'next/navigation'
 export default function Navbar() {
     const [open, setOpen] = useState(false)
     const pathname = usePathname()
-
-    const links = [
-        { href: '/practice', label: 'Practice' },
-        { href: '/quiz',     label: 'Quiz'     },
-        { href: '/games',    label: 'Games'    },
-        { href: '/about',    label: 'About'    },
+    const mainLinks = [
+        { href: '/profile',   label: 'My Profile' },
+        { href: '/games',     label: 'Games'      },
+        { href: '/translate', label: 'Translate'  },
+        { href: '/contact',   label: 'Contact Us' }
     ]
 
     return (
-        <header className="bg-white/80 backdrop-blur-md shadow-md">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-                <Link href="/">
-                    <div className="flex items-center cursor-pointer">
-                        <Image
-                            src="/logo.svg"
-                            alt="LinguaLoop Logo"
-                            width={140}
-                            height={32}
-                            priority
-                        />
-                    </div>
+        <header className="fixed top-0 left-0 w-full bg-gradient-to-r from-purple-300 via-pink-200 to-yellow-200 shadow-lg z-50">
+            <div className="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
+                {/* Logo for Ellie Says */}
+                <Link href="/" className="flex items-center space-x-2">
+                    <Image
+                        src="/Ellie-icon.png"
+                        alt="Ellie Says Avatar"
+                        width={40}
+                        height={40}
+                        className="cursor-pointer rounded-full"
+                    />
+                    <span className="text-white text-2xl font-extrabold tracking-tight">
+    Ellie Says
+  </span>
                 </Link>
 
-                <nav className="hidden md:flex space-x-8">
-                    {links.map((link) => (
+                {/* Main links - centered */}
+                <nav className="hidden md:flex absolute left-1/2 transform -translate-x-1/2 space-x-6">
+                    {mainLinks.map(link => (
                         <Link
                             key={link.href}
                             href={link.href}
-                            className={`font-medium hover:text-blue-600 ${
-                                pathname === link.href
-                                    ? 'text-blue-600 font-bold'
-                                    : 'text-gray-700'
+                            className={`text-white font-semibold hover:text-purple-900 transition ${
+                                pathname === link.href ? 'underline' : ''
                             }`}
                         >
                             {link.label}
@@ -47,47 +47,72 @@ export default function Navbar() {
                     ))}
                 </nav>
 
-                <button
-                    className="md:hidden text-gray-700"
-                    onClick={() => setOpen(o => !o)}
-                >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
+                {/* Auth - right corner */}
+                <div className="hidden md:block">
+                    <Link
+                        href="/registration"
+                        className="bg-white text-purple-600 font-bold py-2 px-4 rounded-full hover:bg-purple-50 transition"
                     >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d={
-                                open
-                                    ? 'M6 18L18 6M6 6l12 12'
-                                    : 'M4 6h16M4 12h16M4 18h16'
-                            }
-                        />
-                    </svg>
-                </button>
+                        Sign In / Sign Up
+                    </Link>
+                </div>
 
-                {open && (
-                    <nav className="absolute top-full left-0 w-full bg-white shadow-md md:hidden">
-                        <ul className="flex flex-col p-4">
-                            {links.map((link) => (
-                                <li key={link.href} className="py-2">
-                                    <Link
-                                        href={link.href}
-                                        className="block text-gray-700 hover:text-blue-600"
-                                    >
-                                        {link.label}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
-                    </nav>
-                )}
+                {/* Mobile Toggle */}
+                <button
+                    className="md:hidden text-white focus:outline-none"
+                    onClick={() => setOpen(o => !o)}
+                    aria-label="Toggle menu"
+                >
+                    {open ? (
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    ) : (
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    )}
+                </button>
             </div>
+
+            {/* Mobile Menu */}
+            {open && (
+                <nav className="md:hidden bg-gradient-to-r from-purple-300 via-pink-200 to-yellow-200 shadow-lg">
+                    <div className="flex flex-col items-center py-4 space-y-3">
+                        {mainLinks.map(link => (
+                            <Link
+                                key={link.href}
+                                href={link.href}
+                                className={`text-white font-semibold text-lg hover:text-purple-900 transition ${
+                                    pathname === link.href ? 'underline' : ''
+                                }`}
+                                onClick={() => setOpen(false)}
+                            >
+                                {link.label}
+                            </Link>
+                        ))}
+                        <Link
+                            href="/registration"
+                            className="mt-2 bg-white text-purple-600 font-bold py-2 px-6 rounded-full hover:bg-purple-50 transition"
+                            onClick={() => setOpen(false)}
+                        >
+                            Sign In / Sign Up
+                        </Link>
+                    </div>
+                </nav>
+            )}
         </header>
     )
 }
