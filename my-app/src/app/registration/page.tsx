@@ -44,21 +44,21 @@ export default function RegistrationPage() {
                         placeholder="Display Name"
                         value={displayName}
                         onChange={e => setDisplayName(e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg border-2 border-purple-300 focus:border-purple-500 outline-none transition"
+                        className="w-full px-4 py-3 rounded-lg border-2 border-purple-300 focus:border-purple-500 outline-none transition text-black placeholder-purple-200 placeholder-opacity-100"
                     />
                     <input
                         type="email"
                         placeholder="Email Address"
                         value={email}
                         onChange={e => setEmail(e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg border-2 border-purple-300 focus:border-purple-500 outline-none transition"
+                        className="w-full px-4 py-3 rounded-lg border-2 border-purple-300 focus:border-purple-500 outline-none transition text-black placeholder-purple-200 placeholder-opacity-100"
                     />
                     <input
                         type="password"
                         placeholder="Password"
                         value={password}
                         onChange={e => setPassword(e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg border-2 border-purple-300 focus:border-purple-500 outline-none transition"
+                        className="w-full px-4 py-3 rounded-lg border-2 border-purple-300 focus:border-purple-500 outline-none transition text-black placeholder-purple-200 placeholder-opacity-100"
                     />
                 </div>
 

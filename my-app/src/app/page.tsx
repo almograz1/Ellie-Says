@@ -3,13 +3,13 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-      <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)] bg-gradient-to-r from-indigo-100 via-blue-200 to-green-200">
+      <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)] bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 p-4">
         <main className="flex flex-col gap-12 row-start-2 items-center sm:items-start max-w-4xl w-full">
           {/* App Logo */}
           <Image
               className="dark:invert"
               src="/logo.svg"
-              alt="LinguaLoop logo"
+              alt="Ellie Says logo"
               width={220}
               height={50}
               priority
@@ -17,7 +17,7 @@ export default function Home() {
 
           {/* Tagline */}
           <h1 className="text-4xl font-extrabold text-center sm:text-left text-indigo-800">
-            Welcome to LinguaLoop
+            Welcome to Ellie Says!
           </h1>
           <p className="text-lg text-gray-700 text-center sm:text-left max-w-xl">
             Choose an option to get started on your language journey!

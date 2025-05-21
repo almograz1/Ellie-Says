@@ -16,7 +16,7 @@ export default function Navbar() {
     ]
 
     return (
-        <header className="fixed top-0 left-0 w-full bg-gradient-to-r from-purple-300 via-pink-200 to-yellow-200 shadow-lg z-50">
+        <header className="fixed top-0 left-0 w-full bg-purple-700 shadow-lg z-50">
             <div className="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
                 {/* Logo for Ellie Says */}
                 <Link href="/" className="flex items-center space-x-2">
@@ -38,7 +38,7 @@ export default function Navbar() {
                         <Link
                             key={link.href}
                             href={link.href}
-                            className={`text-white font-semibold hover:text-purple-900 transition ${
+                            className={`text-white font-semibold hover:text-gray-400 transition ${
                                 pathname === link.href ? 'underline' : ''
                             }`}
                         >
@@ -89,7 +89,7 @@ export default function Navbar() {
 
             {/* Mobile Menu */}
             {open && (
-                <nav className="md:hidden bg-gradient-to-r from-purple-300 via-pink-200 to-yellow-200 shadow-lg">
+                <nav className="md:hidden bg-purple-700 shadow-lg">
                     <div className="flex flex-col items-center py-4 space-y-3">
                         {mainLinks.map(link => (
                             <Link
