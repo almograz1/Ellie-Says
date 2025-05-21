@@ -1,75 +1,78 @@
-import Image from "next/image";
-import Link from "next/link";
+'use client'
+
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
+import Link from 'next/link'
 
 export default function Home() {
-  return (
-      <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)] bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 p-4">
-        <main className="flex flex-col gap-12 row-start-2 items-center sm:items-start max-w-4xl w-full">
-          {/* App Logo */}
-          <Image
-              className="dark:invert"
-              src="/logo.svg"
-              alt="Ellie Says logo"
-              width={220}
-              height={50}
-              priority
-          />
+    const [showMenu, setShowMenu] = useState(false)
 
-          {/* Tagline */}
-          <h1 className="text-4xl font-extrabold text-center sm:text-left text-indigo-800">
-            Welcome to Ellie Says!
-          </h1>
-          <p className="text-lg text-gray-700 text-center sm:text-left max-w-xl">
-            Choose an option to get started on your language journey!
-          </p>
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200 flex flex-col items-center p-6 overflow-hidden">
+            {/* Ellie full-body entrance */}
+            {/* Ellie full-body entrance */}
+            <motion.div
+                className="mt-16"
+                initial={{ y: 300, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ duration: 1, ease: 'easeOut' }}
+                onAnimationComplete={() => setShowMenu(true)}
+            >
+                {/* Transparent background image, larger size */}
+                <Image
+                    src="/ellie-fullbody.png"
+                    alt="Ellie Says Full Body"
+                    width={400}
+                    height={400}
+                    className="rounded-lg shadow-none"
+                    priority
+                />
+            </motion.div>
 
-          {/* Main Menu Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 w-full mt-8">
-            <Link
-                href="/profile"
-                className="block bg-purple-600 text-white hover:bg-purple-700 transition-all font-bold text-lg py-6 px-12 rounded-xl shadow-lg hover:scale-105 transform hover:translate-y-1 text-center"
+            {/* Title & Tagline fade in */}
+            <motion.h1
+                className="mt-6 text-4xl font-extrabold text-purple-800 text-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
             >
-              My Profile
-            </Link>
-            <Link
-                href="/games"
-                className="block bg-yellow-600 text-white hover:bg-yellow-700 transition-all font-bold text-lg py-6 px-12 rounded-xl shadow-lg hover:scale-105 transform hover:translate-y-1 text-center"
+                Welcome to Ellie Says!
+            </motion.h1>
+            <motion.p
+                className="mt-2 text-lg text-purple-600 text-center max-w-md"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.7, duration: 0.5 }}
             >
-              Games
-            </Link>
-            <Link
-                href="/translate"
-                className="block bg-pink-600 text-white hover:bg-pink-700 transition-all font-bold text-lg py-6 px-12 rounded-xl shadow-lg hover:scale-105 transform hover:translate-y-1 text-center"
-            >
-              Translate
-            </Link>
-            <Link
-                href="/contact"
-                className="block bg-gray-600 text-white hover:bg-gray-700 transition-all font-bold text-lg py-6 px-12 rounded-xl shadow-lg hover:scale-105 transform hover:translate-y-1 text-center"
-            >
-              Contact Us
-            </Link>
-          </div>
-        </main>
+                Choose an option to get started on your language journey.
+            </motion.p>
 
-        {/* Footer */}
-        <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center text-sm text-gray-600 mt-16">
-          <Link href="/privacy" className="hover:underline">
-            Privacy
-          </Link>
-          <Link href="/terms" className="hover:underline">
-            Terms
-          </Link>
-          <a
-              className="flex items-center gap-1 hover:underline"
-              href="https://github.com/your-repo"
-              target="_blank"
-              rel="noopener noreferrer"
-          >
-            <Image src="/github.svg" alt="GitHub icon" width={16} height={16} />
-            GitHub
-          </a>
-        </footer>
-      </div>
-  );
+            {/* Menu appears after entrance animation */}
+            <AnimatePresence>
+                {showMenu && (
+                    <motion.div
+                        className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-4xl"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        transition={{ delay: 0.2, duration: 0.6 }}
+                    >
+                        <Link href="/profile" className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-4 rounded-lg text-center shadow transition">
+                            My Profile
+                        </Link>
+                        <Link href="/games" className="bg-orange-400 hover:bg-orange-500 text-white font-semibold py-4 rounded-lg text-center shadow transition">
+                            Games
+                        </Link>
+                        <Link href="/translate" className="bg-pink-500 hover:bg-pink-600 text-white font-semibold py-4 rounded-lg text-center shadow transition">
+                            Translate
+                        </Link>
+                        <Link href="/contact" className="bg-green-500 hover:bg-green-600 text-white font-semibold py-4 rounded-lg text-center shadow transition">
+                            Contact Us
+                        </Link>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    )
 }
