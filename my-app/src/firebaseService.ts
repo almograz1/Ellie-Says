@@ -18,6 +18,7 @@ export interface UserProfile {
     displayName: string;
     email: string;
     createdAt: string;
+    verified: boolean;
 }
 
 /**
