@@ -6,6 +6,18 @@
     { "english": "water", "hebrew": "מַיִם" },
     { "english": "house", "hebrew": "בַּיִת" },
     { "english": "friend", "hebrew": "חָבֵר" },
-    { "english": "school", "hebrew": "בֵּית סֵפֶר" }
+    { "english": "school", "hebrew": "בֵּית סֵפֶר" },
+    { "english": "mother", "hebrew": "אֵם" },
+    { "english": "father", "hebrew": "אָב" },
+    { "english": "tree", "hebrew": "עֵץ" },
+    { "english": "car", "hebrew": "מְכוֹנִית" },
+    { "english": "bread", "hebrew": "לֶחֶם" },
+    { "english": "milk", "hebrew": "חָלָב" },
+    { "english": "table", "hebrew": "שֻׁלְחָן" },
+    { "english": "chair", "hebrew": "כִּסֵּא" },
+    { "english": "window", "hebrew": "חַלּוֹן" },
+    { "english": "door", "hebrew": "דֶּלֶת" },
+    { "english": "cat", "hebrew": "חָתוּל" },
+    { "english": "bird", "hebrew": "צִפּוֹר" }
   ]
   

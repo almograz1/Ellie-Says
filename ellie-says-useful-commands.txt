@@ -1,0 +1,59 @@
+
+# 📦 INSTALLATION & SETUP COMMANDS
+
+# Install project dependencies
+npm install
+
+# Install Firebase SDK
+npm install firebase
+
+# Install TypeScript execution tools
+npm install -D tsx ts-node
+
+# Run the development server (Next.js)
+npm run dev
+
+# Build the project for production
+npm run build
+
+# Start the production server
+npm start
+
+# Lint the project (if ESLint is set up)
+npm run lint
+
+
+# 🔥 FIREBASE DATA UPLOAD COMMANDS
+
+# Upload word dictionary to Firestore (TypeScript version)
+npx tsx uploadWordsToFirestore.ts
+
+# OR (if using ts-node)
+npx ts-node uploadWordsToFirestore.ts
+
+
+# ⚠️ TROUBLESHOOTING TIPS
+
+# If you see "permission-denied" errors in Firestore:
+# => Update Firestore Rules temporarily to allow writes during development
+# In Firebase Console -> Firestore -> Rules:
+# ------------------------------------------
+# rules_version = '2';
+# service cloud.firestore {
+#   match /databases/{database}/documents {
+#     match /{document=**} {
+#       allow read, write: if true;
+#     }
+#   }
+# }
+
+# If the script can't find a file, make sure you're in the /my-app folder:
+cd my-app
+
+
+# 📂 COMMON PROJECT STRUCTURE
+
+# - /public/data/wordData.json         ← JSON file for word pairs
+# - /src/firebase.ts                   ← Firebase config file
+# - /uploadWordsToFirestore.ts        ← Script to upload dictionary to Firestore
+# - /src/app/games/word-match/page.tsx← Game page that loads data
