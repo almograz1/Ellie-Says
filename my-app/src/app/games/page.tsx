@@ -15,7 +15,7 @@ const initialGames: GameOption[] = [
   { id: 'word-match',      title: 'Word Match',       description: 'Match words with their correct meanings', icon: '🔤' },
   { id: 'pronunciation',   title: 'Pronunciation Practice', description: 'Perfect your accent with our audio tool', icon: '🔊' },
   { id: 'sentence-builder',title: 'Sentence Builder', description: 'Create correct sentences from scrambled words', icon: '📝' },
-  { id: 'flashcards',      title: 'Flashcards',       description: 'Test your vocabulary with interactive flashcards', icon: '🃏' },
+  { id: 'TriviaGame',      title: 'Trivia Game',       description: 'Pick the correct English meaning for Hebrew words', icon: '🎮' }, // 🔄 Changed from flashcards
   { id: 'listening-challenge', title: 'Listening Challenge', description: 'Test your listening comprehension skills', icon: '👂' },
   { id: 'daily-challenge',  title: 'Daily Challenge',  description: 'A new language challenge every day', icon: '🏆' }
 ]
