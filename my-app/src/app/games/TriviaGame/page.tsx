@@ -1,4 +1,3 @@
-// --- unchanged imports and setup ---
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -43,6 +42,7 @@ export default function TriviaGamePage() {
   const [showSentence, setShowSentence] = useState(false);
   const [showEmoji, setShowEmoji] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isGuest, setIsGuest] = useState(false);
 
   const auth = getAuth(app);
   const db = getFirestore(app);
@@ -51,7 +51,11 @@ export default function TriviaGamePage() {
     const fetchWords = async () => {
       const snapshot = await getDocs(collection(db, 'trivia_words'));
       const words: WordEntry[] = snapshot.docs.map(doc => doc.data() as WordEntry);
-      const selectedQuestions = getRandomEntries(words, 5);
+      const user = auth.currentUser;
+      const guest = !user;
+      setIsGuest(guest);
+
+      const selectedQuestions = getRandomEntries(words, guest ? 3 : 5);
       setWordPairs(words);
       setQuestions(selectedQuestions);
       setOptions(getOptions(selectedQuestions[0], words));
@@ -78,7 +82,7 @@ export default function TriviaGamePage() {
       const next = currentIndex + 1;
       if (next >= questions.length) {
         setShowSummary(true);
-        saveResults();
+        if (!isGuest) saveResults();
       } else {
         setCurrentIndex(next);
         setOptions(getOptions(questions[next], wordPairs));
@@ -109,7 +113,7 @@ export default function TriviaGamePage() {
     setIsLoading(true);
     const snapshot = await getDocs(collection(db, 'trivia_words'));
     const words: WordEntry[] = snapshot.docs.map(doc => doc.data() as WordEntry);
-    const selectedQuestions = getRandomEntries(words, 5);
+    const selectedQuestions = getRandomEntries(words, isGuest ? 3 : 5);
     setWordPairs(words);
     setQuestions(selectedQuestions);
     setCurrentIndex(0);
@@ -182,23 +186,46 @@ export default function TriviaGamePage() {
           <p className="mt-4 text-base">Score: {score}</p>
         </div>
       ) : (
-        <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center">
-          <h2 className="text-4xl font-bold mb-6">🎉 Game Over!</h2>
-          <p className="text-2xl mb-6">Your Score: {score} / {questions.length}</p>
-          <ul className="text-left text-lg mb-6">
-            {answers.map((a, i) => (
-              <li key={i} className={`mb-2 ${a.result === 'Correct' ? 'text-green-600' : 'text-red-600'}`}>
-                <strong>{a.hebrew}</strong>: You chose <em>{a.selected}</em> – {a.result}
-              </li>
-            ))}
-          </ul>
-          <button
-            onClick={restart}
-            className="bg-purple-300 hover:bg-purple-400 text-white px-6 py-3 rounded shadow text-lg"
-          >
-            New Game
-          </button>
-        </div>
+        isGuest ? (
+          <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center">
+            <h2 className="text-3xl font-bold mb-6">🎮 Want More Games?</h2>
+            <p className="text-xl mb-6">
+              If you enjoyed this game, sign up for full access to more rounds and all game modes!
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => window.location.href = '/signin'}
+                className="bg-purple-400 hover:bg-purple-500 text-white px-6 py-3 rounded shadow text-lg"
+              >
+                Sign In / Register
+              </button>
+              <button
+                onClick={() => window.location.href = '/games/word-match'}
+                className="bg-yellow-300 hover:bg-yellow-400 text-purple-800 px-6 py-3 rounded shadow text-lg"
+              >
+                Try Another Game
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center">
+            <h2 className="text-4xl font-bold mb-6">🎉 Game Over!</h2>
+            <p className="text-2xl mb-6">Your Score: {score} / {questions.length}</p>
+            <ul className="text-left text-lg mb-6">
+              {answers.map((a, i) => (
+                <li key={i} className={`mb-2 ${a.result === 'Correct' ? 'text-green-600' : 'text-red-600'}`}>
+                  <strong>{a.hebrew}</strong>: You chose <em>{a.selected}</em> – {a.result}
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={restart}
+              className="bg-purple-300 hover:bg-purple-400 text-white px-6 py-3 rounded shadow text-lg"
+            >
+              New Game
+            </button>
+          </div>
+        )
       )}
     </div>
   );
