@@ -1,3 +1,4 @@
+// --- unchanged imports and setup ---
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -129,6 +130,7 @@ export default function TriviaGamePage() {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 p-10 text-purple-800 text-xl">
       {!showSummary ? (
         <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center">
+          <p className="text-lg mb-2">Round {currentIndex + 1} / {questions.length}</p>
           <h1 className="text-4xl font-bold mb-2">What does this word mean?</h1>
           <h2 className="text-6xl font-extrabold text-purple-700 mb-6" dir="rtl">
             {questions[currentIndex].hebrew}
@@ -185,7 +187,7 @@ export default function TriviaGamePage() {
           <p className="text-2xl mb-6">Your Score: {score} / {questions.length}</p>
           <ul className="text-left text-lg mb-6">
             {answers.map((a, i) => (
-              <li key={i} className="mb-2">
+              <li key={i} className={`mb-2 ${a.result === 'Correct' ? 'text-green-600' : 'text-red-600'}`}>
                 <strong>{a.hebrew}</strong>: You chose <em>{a.selected}</em> – {a.result}
               </li>
             ))}
