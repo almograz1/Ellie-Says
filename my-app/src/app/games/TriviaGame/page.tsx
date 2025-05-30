@@ -199,12 +199,6 @@ export default function TriviaGamePage() {
               >
                 Sign In / Register
               </button>
-              <button
-                onClick={() => window.location.href = '/games/word-match'}
-                className="bg-yellow-300 hover:bg-yellow-400 text-purple-800 px-6 py-3 rounded shadow text-lg"
-              >
-                Try Another Game
-              </button>
             </div>
           </div>
         ) : (

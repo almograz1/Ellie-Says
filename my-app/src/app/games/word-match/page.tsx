@@ -1,265 +1,213 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getAuth } from 'firebase/auth';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import {
   getFirestore,
   collection,
   getDocs,
-  doc,
-  updateDoc,
-  increment,
-  setDoc
+  addDoc,
+  serverTimestamp
 } from 'firebase/firestore';
 import { app } from '../../../firebase';
-import {
-  getGuestPlayCount,
-  incrementGuestPlayCount,
-  hasExceededGuestLimit
-} from '../../../utils/guestLimit';
 
-interface WordPair {
+interface WordEntry {
   english: string;
   hebrew: string;
+  sentence: string;
+  emoji: string;
 }
 
 function shuffleArray<T>(array: T[]): T[] {
-  return array
-    .map((value) => ({ value, sort: Math.random() }))
-    .sort((a, b) => a.sort - b.sort)
-    .map(({ value }) => value);
+  return [...array].sort(() => 0.5 - Math.random());
 }
 
 export default function WordMatchPage() {
-  const [wordPairs, setWordPairs] = useState<WordPair[]>([]);
-  const [shuffledHebrew, setShuffledHebrew] = useState<string[]>([]);
+  const [wordPairs, setWordPairs] = useState<WordEntry[]>([]);
+  const [englishOptions, setEnglishOptions] = useState<WordEntry[]>([]);
+  const [hebrewOptions, setHebrewOptions] = useState<WordEntry[]>([]);
   const [selectedEnglish, setSelectedEnglish] = useState<string | null>(null);
   const [selectedHebrew, setSelectedHebrew] = useState<string | null>(null);
-  const [matches, setMatches] = useState<{ [key: string]: boolean }>({});
-  const [gameFinished, setGameFinished] = useState(false);
+  const [matchedPairs, setMatchedPairs] = useState<[string, string][]>([]);
+  const [feedbackLog, setFeedbackLog] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [gameOver, setGameOver] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
-  const [guestBlocked, setGuestBlocked] = useState(false);
-  const [showGuestPromo, setShowGuestPromo] = useState(false);
+  const [errorPair, setErrorPair] = useState<[string, string] | null>(null);
 
-  const auth = getAuth(app);
   const db = getFirestore(app);
 
-  const loadRound = async () => {
-    const snapshot = await getDocs(collection(db, 'words'));
-    const allWords = snapshot.docs.map(doc => doc.data() as WordPair);
-    const chosen = shuffleArray(allWords).slice(0, 4);
-    setWordPairs(chosen);
-    setShuffledHebrew(shuffleArray(chosen.map(pair => pair.hebrew)));
-    setMatches({});
-    setSelectedEnglish(null);
-    setSelectedHebrew(null);
-    setGameFinished(false);
+  const initializeGame = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, 'words'));
+      const words: WordEntry[] = snapshot.docs.map(doc => doc.data() as WordEntry);
+      if (words.length < 4) {
+        console.error('Not enough word pairs in Firestore to start the game.');
+        return;
+      }
+      const selected = shuffleArray(words).slice(0, 4);
+      setWordPairs(selected);
+      setEnglishOptions(shuffleArray(selected));
+      setHebrewOptions(shuffleArray(selected));
+      setMatchedPairs([]);
+      setFeedbackLog([]);
+      setGameOver(false);
+    } catch (error) {
+      console.error('Failed to fetch word pairs:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    const user = auth.currentUser;
-    const guest = !user;
-    setIsGuest(guest);
-    if (guest && hasExceededGuestLimit()) {
-      setGuestPromo(true);
-      setGuestBlocked(true);
-    } else {
-      loadRound();
-    }
+    setHydrated(true);
   }, []);
 
-  const handleMatch = async () => {
-    if (!selectedEnglish || !selectedHebrew) return;
+  useEffect(() => {
+    if (!hydrated) return;
 
-    const correctPair = wordPairs.find(
-      pair => pair.english === selectedEnglish && pair.hebrew === selectedHebrew
-    );
+    const unsubscribe = onAuthStateChanged(getAuth(app), async (user) => {
+      setIsGuest(!user);
+      initializeGame();
+    });
 
-    const matchKey = `${selectedEnglish}-${selectedHebrew}`;
-    const isCorrect = !!correctPair;
-
-    if (isCorrect) {
-      setMatches(prev => {
-        const updated = { ...prev, [selectedEnglish]: true };
-        const correctMatches = Object.values(updated).filter(Boolean).length;
-        if (correctMatches === 4) {
-          setTimeout(() => {
-            setGameFinished(true);
-            if (isGuest) {
-              if (hasExceededGuestLimit()) {
-                setGuestBlocked(true);
-              } else {
-                incrementGuestPlayCount();
-                if (hasExceededGuestLimit()) {
-                  setShowGuestPromo(true);
-                }
-              }
-            }
-          }, 500);
-        }
-        return updated;
-      });
-
-      if (auth.currentUser) {
-        const userRef = doc(db, 'users', auth.currentUser.uid);
-        await setDoc(userRef, {}, { merge: true });
-        await updateDoc(userRef, {
-          wordMatchScore: increment(1)
-        });
-      }
-
-      setSelectedEnglish(null);
-      setSelectedHebrew(null);
-    } else {
-      setMatches(prev => ({ ...prev, [matchKey]: false }));
-      setSelectedEnglish(null);
-      setSelectedHebrew(null);
-    }
-  };
+    return () => unsubscribe();
+  }, [hydrated]);
 
   useEffect(() => {
     if (selectedEnglish && selectedHebrew) {
-      handleMatch();
+      const match = wordPairs.find(pair => pair.english === selectedEnglish && pair.hebrew === selectedHebrew);
+      const isCorrect = !!match;
+      if (isCorrect) {
+        setMatchedPairs(prev => [...prev, [selectedEnglish, selectedHebrew]]);
+        setFeedbackLog(prev => [...prev, { english: selectedEnglish, hebrew: selectedHebrew, result: 'Correct' }]);
+        setSelectedEnglish(null);
+        setSelectedHebrew(null);
+        setErrorPair(null);
+      } else {
+        setFeedbackLog(prev => [...prev, { english: selectedEnglish, hebrew: selectedHebrew, result: 'Wrong' }]);
+        setErrorPair([selectedEnglish, selectedHebrew]);
+        setTimeout(() => {
+          setSelectedEnglish(null);
+          setSelectedHebrew(null);
+          setErrorPair(null);
+        }, 600);
+      }
     }
   }, [selectedEnglish, selectedHebrew]);
 
-  if (guestBlocked) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 p-10 text-purple-800">
-        <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-10 max-w-3xl text-center">
-          <h2 className="text-3xl font-bold mb-6">🚫 Guest Trial Limit Reached</h2>
-          <p className="text-xl mb-6">
-            You've reached your free game limit. Sign up to unlock full access to Ellie Says!
-          </p>
-          <button
-            onClick={() => window.location.href = '/signin'}
-            className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded shadow text-lg"
-          >
-            Sign In / Register
-          </button>
-        </div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (wordPairs.length === 0) return;
+    if (matchedPairs.length === wordPairs.length) {
+      setGameOver(true);
+      const user = getAuth(app).currentUser;
+      if (user) {
+        addDoc(collection(db, 'word_match_results'), {
+          uid: user.uid,
+          results: feedbackLog,
+          createdAt: serverTimestamp()
+        });
+      }
+    }
+  }, [matchedPairs, wordPairs]);
+
+  if (!hydrated || isLoading) return <div>Loading game...</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 flex items-center justify-center p-6">
-      <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-8 max-w-4xl w-full text-purple-800">
-        <h1 className="text-3xl font-bold text-center mb-6">🧠 Word Match</h1>
-
-        {gameFinished ? (
-          showGuestPromo ? (
-            <div className="text-center space-y-6">
-              <h2 className="text-3xl font-bold text-purple-800">Want more games?</h2>
-              <p className="text-xl">Register now to unlock unlimited rounds and all features!</p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button
-                  onClick={() => window.location.href = '/signin'}
-                  className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded shadow text-lg"
-                >
-                  Sign In / Register
-                </button>
-                <button
-                  onClick={() => window.location.href = '/games/trivia'}
-                  className="bg-yellow-300 hover:bg-yellow-400 text-purple-800 px-6 py-3 rounded shadow text-lg"
-                >
-                  Try Another Game
-                </button>
-              </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 p-10 text-purple-800 text-2xl">
+      <div className="max-w-5xl w-full">
+        {gameOver ? (
+          isGuest ? (
+            <div className="text-center bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-10">
+              <h2 className="text-3xl font-bold mb-6">🎮 Want More Games?</h2>
+              <p className="text-xl mb-6">
+                If you enjoyed this game, sign up for full access to more rounds and all game modes!
+              </p>
+              <button
+                onClick={() => window.location.href = '/signin'}
+                className="bg-purple-400 hover:bg-purple-500 text-white px-6 py-3 rounded shadow text-lg"
+              >
+                Sign In / Register
+              </button>
             </div>
           ) : (
-            <div className="text-center space-y-6">
-              <h2 className="text-4xl font-bold text-green-700">🎉 Victory!</h2>
-              <p className="text-xl text-green-600">You matched all words correctly!</p>
-
-              <div className="mt-6 text-left">
-                <h3 className="text-2xl font-semibold mb-3">✅ Summary of Translations</h3>
-                <ul className="space-y-2 text-xl">
-                  {wordPairs.map((pair, index) => (
-                    <li key={index}>
-                      <span className="font-bold">{pair.english}</span> — <span className="text-right rtl">{pair.hebrew}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="mt-6 space-y-2 text-left">
-                <h3 className="text-2xl font-semibold mb-3">🧪 Your Match Attempts:</h3>
-                {Object.entries(matches).map(([key, result], i) => (
-                  <div
-                    key={i}
-                    className={`text-lg px-4 py-2 rounded-md ${
-                      result ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}
-                  >
-                    {key.replace('-', ' ↔ ')} — {result ? 'Correct!' : 'Try again'}
-                  </div>
+            <div className="text-center bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-10">
+              <h2 className="text-3xl font-bold mb-6">🎉 You did it!</h2>
+              <p className="text-xl mb-4">You matched all the pairs correctly!</p>
+              <ul className="text-left text-lg mb-6">
+                {feedbackLog.map((entry, i) => (
+                  <li key={i} className={entry.result === 'Correct' ? 'text-green-700' : 'text-red-600'}>
+                    {entry.english} → {entry.hebrew}: {entry.result}
+                  </li>
                 ))}
-              </div>
-
+              </ul>
               <button
-                onClick={loadRound}
-                className="mt-6 px-6 py-3 bg-purple-500 text-white text-lg rounded-xl hover:bg-purple-600 transition"
+                onClick={initializeGame}
+                className="bg-yellow-400 hover:bg-yellow-500 text-purple-900 px-6 py-3 rounded shadow text-lg"
               >
-                Next Round 🔁
+                Play Again
               </button>
             </div>
           )
         ) : (
-          <>
-            <div className="grid grid-cols-2 gap-6 justify-items-center">
-              <div>
-                <h2 className="text-xl font-semibold mb-4">English</h2>
-                {wordPairs.map(({ english }) => (
-                  <button
-                    key={english}
-                    onClick={() => setSelectedEnglish(english)}
-                    disabled={matches[english] === true}
-                    className={`w-40 h-40 flex items-center justify-center mb-3 rounded-md border text-4xl font-bold ${
-                      selectedEnglish === english ? 'bg-purple-300 text-white' : 'bg-white'
-                    } ${matches[english] === true ? 'opacity-50 cursor-not-allowed' : 'hover:bg-purple-100'}`}
-                  >
-                    {english}
-                  </button>
-                ))}
-              </div>
-
-              <div>
-                <h2 className="text-xl font-semibold mb-4 text-right">Hebrew</h2>
-                {shuffledHebrew.map(hebrew => {
-                  const isUsed = Object.values(matches).includes(true) &&
-                    Object.entries(matches).some(
-                      ([k, v]) => v === true && wordPairs.find(w => w.english === k)?.hebrew === hebrew
-                    );
+          <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-10">
+            <h2 className="text-4xl font-bold mb-10 text-center">Match the words!</h2>
+            <div className="grid grid-cols-2 gap-16">
+              <div className="flex flex-col items-end gap-6">
+                {englishOptions.map(pair => {
+                  const matched = matchedPairs.some(p => p[0] === pair.english);
+                  const selected = selectedEnglish === pair.english;
+                  const isError = errorPair?.[0] === pair.english;
                   return (
                     <button
-                      key={hebrew}
-                      onClick={() => setSelectedHebrew(hebrew)}
-                      disabled={isUsed}
-                      className={`w-40 h-40 flex items-center justify-center mb-3 rounded-md border text-4xl font-bold rtl text-right pr-2 ${
-                        selectedHebrew === hebrew ? 'bg-yellow-300 text-white' : 'bg-white'
-                      } ${isUsed ? 'opacity-50 cursor-not-allowed' : 'hover:bg-yellow-100'}`}
+                      key={pair.english}
+                      className={`w-60 h-24 rounded-xl shadow text-2xl font-bold transition-colors duration-200
+                        ${matched ? 'bg-green-300' :
+                          isError ? 'bg-red-400 text-white' :
+                            selected ? 'bg-purple-600 text-white' : 'bg-white hover:bg-purple-100'}`}
+                      onClick={() => setSelectedEnglish(pair.english)}
+                      disabled={matched}
                     >
-                      {hebrew}
+                      {pair.english}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="flex flex-col items-start gap-6">
+                {hebrewOptions.map(pair => {
+                  const matched = matchedPairs.some(p => p[1] === pair.hebrew);
+                  const selected = selectedHebrew === pair.hebrew;
+                  const isError = errorPair?.[1] === pair.hebrew;
+                  return (
+                    <button
+                      key={pair.hebrew}
+                      className={`w-60 h-24 rounded-xl shadow text-2xl font-bold transition-colors duration-200
+                        ${matched ? 'bg-green-300' :
+                          isError ? 'bg-red-400 text-white' :
+                            selected ? 'bg-yellow-500 text-white' : 'bg-white hover:bg-yellow-100'}`}
+                      onClick={() => setSelectedHebrew(pair.hebrew)}
+                      disabled={matched}
+                    >
+                      {pair.hebrew}
                     </button>
                   );
                 })}
               </div>
             </div>
-
-            <div className="mt-6 space-y-2">
-              {Object.entries(matches).map(([key, result], i) => (
-                <div
-                  key={i}
-                  className={`text-lg px-4 py-2 rounded-md ${
-                    result ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                  }`}
-                >
-                  {key.replace('-', ' ↔ ')} — {result ? 'Correct!' : 'Try again'}
-                </div>
-              ))}
-            </div>
-          </>
+            {!isGuest && feedbackLog.length > 0 && (
+              <div className="mt-10 bg-white/80 p-6 rounded-xl shadow text-lg">
+                <h3 className="text-2xl font-semibold mb-4">Your Answers</h3>
+                <ul className="list-disc pl-6">
+                  {feedbackLog.map((entry, i) => (
+                    <li key={i} className={entry.result === 'Correct' ? 'text-green-700' : 'text-red-600'}>
+                      {entry.english} → {entry.hebrew}: {entry.result}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </div>
