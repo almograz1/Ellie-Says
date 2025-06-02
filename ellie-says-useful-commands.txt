@@ -57,3 +57,10 @@ cd my-app
 # - /src/firebase.ts                   ← Firebase config file
 # - /uploadWordsToFirestore.ts        ← Script to upload dictionary to Firestore
 # - /src/app/games/word-match/page.tsx← Game page that loads data
+
+
+
+#npm install react-dnd react-dnd-html5-backend
+# - The command npm install react-dnd react-dnd-html5-backend installs the React Drag and Drop library 
+#(react-dnd) and its HTML5 backend, which lets you add drag-and-drop functionality to your React app 
+#using the browser's built-in drag events.

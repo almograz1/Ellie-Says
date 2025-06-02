@@ -12,12 +12,24 @@ interface GameOption {
 }
 
 const initialGames: GameOption[] = [
-  { id: 'word-match',      title: 'Word Match',       description: 'Match words with their correct meanings', icon: '🔤' },
-  { id: 'pronunciation',   title: 'Pronunciation Practice', description: 'Perfect your accent with our audio tool', icon: '🔊' },
-  { id: 'sentence-builder',title: 'Sentence Builder', description: 'Create correct sentences from scrambled words', icon: '📝' },
-  { id: 'TriviaGame',      title: 'Trivia Game',       description: 'Pick the correct English meaning for Hebrew words', icon: '🎮' }, // 🔄 Changed from flashcards
-  { id: 'listening-challenge', title: 'Listening Challenge', description: 'Test your listening comprehension skills', icon: '👂' },
-  { id: 'daily-challenge',  title: 'Daily Challenge',  description: 'A new language challenge every day', icon: '🏆' }
+  {
+    id: 'word-match',
+    title: 'Word Match',
+    description: 'Match words with their correct meanings',
+    icon: '🔤'
+  },
+  {
+    id: 'TriviaGame',
+    title: 'Trivia Game',
+    description: 'Pick the correct English meaning for Hebrew words',
+    icon: '🎮'
+  },
+  {
+    id: 'SentenceGame',
+    title: 'Sentence Completion',
+    description: 'Fill in the blanks to complete the sentence',
+    icon: '📝'
+  }
 ]
 
 export default function GamesPage() {
@@ -28,7 +40,9 @@ export default function GamesPage() {
     <div className="min-h-screen bg-gradient-to-r from-indigo-50 via-blue-50 to-green-50">
       <main className="max-w-6xl mx-auto px-4 py-12">
         <h1 className="text-4xl font-bold text-gray-800 mb-4 text-center">Learn Through Play</h1>
-        <p className="text-lg text-gray-600 mb-12 text-center">Choose from our collection of engaging language games designed to make learning fun and effective.</p>
+        <p className="text-lg text-gray-600 mb-12 text-center">
+          Choose from our collection of engaging language games designed to make learning fun and effective.
+        </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {games.map(game => (
             <div
