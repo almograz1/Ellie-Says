@@ -1,124 +1,229 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAuth } from 'firebase/auth';
-import { app } from '../../../firebase';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import sentenceData from '@/data/sentenceData.json';
-import { HTML5Backend } from 'react-dnd-html5-backend';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { app } from '../../../firebase';
 
-const ItemType = {
-  WORD: 'word',
-};
+/* ────────── constants ────────── */
+const GUEST_ROUNDS = 3;             // guests get 3 rounds total
+const USER_ROUNDS  = 5;             // signed users get 5
+const STORAGE_KEY  = 'sentenceGuestPlayed';
+const ItemType = { WORD: 'word' } as const;
 
-interface SentenceEntry {
-  sentence: string;
-  missingWords: string[];
-  distractors: string[];
-}
+/* ────────── data types ────────── */
+interface SentenceEntry { sentence: string; missingWords: string[]; distractors: string[]; }
+interface WordItem       { id: string; word: string; }
+interface RoundResult    { round: number; chosen: string[]; correct: boolean; correctSentence: string; }
 
-interface WordItem {
-  id: string;
-  word: string;
-}
-
+/* ────────── main page ────────── */
 export default function SentenceGamePage() {
   const router = useRouter();
-  const [entry, setEntry] = useState<SentenceEntry | null>(null);
-  const [filledWords, setFilledWords] = useState<(WordItem | null)[]>([null, null, null]);
-  const [words, setWords] = useState<WordItem[]>([]);
-  const [feedback, setFeedback] = useState<string | null>(null);
-  const [submitted, setSubmitted] = useState(false);
 
-  const auth = getAuth(app);
-  const user = auth.currentUser;
+  /* auth / guest detection */
+  const [hydrated, setHydrated] = useState(false);
+  const [isGuest,  setIsGuest]  = useState<boolean | null>(null);
+  const [trialUsed,setTrialUsed]= useState(false);   // already played 3-round trial?
+
+  /* UI states */
+  const [limitPrompt,setLimitPrompt]=useState(false); // show sign-in prompt
+  const [round,setRound]     = useState(1);
+  const [entry,setEntry]     = useState<SentenceEntry|null>(null);
+  const [pool,setPool]       = useState<WordItem[]>([]);
+  const [filled,setFilled]   = useState<(WordItem|null)[]>([null,null,null]);
+  const [feedback,setFB]     = useState<string|null>(null);
+  const [submitted,setSub]   = useState(false);
+  const [showCorrect,setShowCorrect] = useState(false);
+  const [results,setResults] = useState<RoundResult[]>([]);
+  const [usedSent,setUsed]   = useState<string[]>([]);
+  const [showSum,setShowSum] = useState(false);      // summary for signed users
+
+  /* ───── hydrate & auth listener ───── */
+  useEffect(() => { setHydrated(true); }, []);
 
   useEffect(() => {
-    const limitKey = 'sentenceGameTrial';
-    const playCount = Number(localStorage.getItem(limitKey) || '0');
-    if (!user && playCount >= 1) {
-      router.push('/games/TrialLimit');
+    if (!hydrated) return;
+    const unsub = onAuthStateChanged(getAuth(app), user => {
+      const guest = !user;
+      setIsGuest(guest);
+      setTrialUsed(localStorage.getItem(STORAGE_KEY) === 'done');
+      if (guest && localStorage.getItem(STORAGE_KEY) === 'done')
+        setLimitPrompt(true);
+    });
+    return () => unsub();
+  }, [hydrated]);
+
+  /* ───── helpers ───── */
+  const build = (e:SentenceEntry)=>
+    e.missingWords.reduce((s,w)=>s.replace('___',w),e.sentence);
+
+  const loadSentence = useCallback((prevUsed:string[])=>{
+    let pick:SentenceEntry;
+    const total=sentenceData.length;
+    do { pick = sentenceData[Math.floor(Math.random()*total)]; }
+    while(prevUsed.includes(pick.sentence)&&prevUsed.length<total);
+
+    const shuffled=[...pick.missingWords,...pick.distractors]
+      .sort(()=>.5-Math.random())
+      .map((w,i)=>({id:`${w}-${i}`,word:w}));
+
+    setEntry(pick);
+    setPool(shuffled);
+    setFilled([null,null,null]);
+    setFB(null); setSub(false); setShowCorrect(false);
+    setUsed([...prevUsed,pick.sentence]);
+  },[]);
+
+  /* first load if allowed */
+  useEffect(()=>{
+    if(isGuest===null||limitPrompt) return;
+    loadSentence([]);
+  },[isGuest,limitPrompt,loadSentence]);
+
+  /* drag handlers */
+  const dropBlank=(i:number,it:WordItem)=>{
+    if(submitted) return;
+    setFilled(cur=>{
+      const n=cur.map(w=>w?.id===it.id?null:w);
+      n[i]=it; return n;
+    });
+  };
+  const returnToPool=(it:WordItem)=> setFilled(cur=>cur.map(w=>w?.id===it.id?null:w));
+
+  /* submit round */
+  const submit=()=>{
+    if(!entry) return;
+    const correct = filled.every((w,i)=>w?.word===entry.missingWords[i]);
+    setFB(correct?'✅ Great job!':'❌ Some words are incorrect.');
+    setShowCorrect(!correct);
+    setSub(true);
+    setResults(r=>[...r,{
+      round,correct,
+      chosen:filled.map(w=>w?.word||'(blank)'),
+      correctSentence:build(entry)
+    }]);
+  };
+
+  /* after Submit → next or prompt */
+  const next=()=>{
+    const maxRounds = (isGuest?GUEST_ROUNDS:USER_ROUNDS);
+    if(round < maxRounds){
+      setRound(r=>r+1);
+      loadSentence(usedSent);
+    }else{
+      if(isGuest){
+        localStorage.setItem(STORAGE_KEY,'done');
+        setLimitPrompt(true);
+      }else{
+        setShowSum(true);
+      }
     }
-  }, []);
-
-  useEffect(() => {
-    const random = sentenceData[Math.floor(Math.random() * sentenceData.length)];
-    const combined = [...random.missingWords, ...random.distractors]
-      .sort(() => 0.5 - Math.random())
-      .map((word, i) => ({ id: `${word}-${i}`, word }));
-    setEntry(random);
-    setWords(combined);
-  }, []);
-
-  const handleDrop = (index: number, item: WordItem) => {
-    if (submitted) return;
-    const updated = [...filledWords];
-    updated[index] = item;
-    setFilledWords(updated);
   };
 
-  const checkAnswers = () => {
-    if (!entry) return;
-    const correct = filledWords.every((item, i) => item?.word === entry.missingWords[i]);
-    setFeedback(correct ? '✅ Great job! Sentence completed correctly.' : '❌ Some words are incorrect.');
-    setSubmitted(true);
-
-    if (!user) {
-      const key = 'sentenceGameTrial';
-      const count = Number(localStorage.getItem(key) || '0');
-      localStorage.setItem(key, (count + 1).toString());
-    }
+  /* signed-in summary restart */
+  const restart=()=>{
+    setRound(1); setResults([]); setUsed([]); setShowSum(false);
+    loadSentence([]);
   };
 
-  const resetGame = () => {
-    window.location.reload();
-  };
+  /* ───── render branches ───── */
 
-  if (!entry) return <div className="text-center p-4">Loading...</div>;
+  if(!hydrated||isGuest===null) return <div className="min-h-screen flex items-center justify-center text-xl">Loading…</div>;
 
+  /* trial-end prompt */
+  if(limitPrompt)
+    return(
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 p-6">
+        <div className="bg-white/90 backdrop-blur-md p-10 rounded-2xl shadow-2xl max-w-xl w-full text-center text-purple-800">
+          <h2 className="text-3xl font-bold mb-6">🎮 Want More Games?</h2>
+          <p className="text-xl mb-6">Sign up to play unlimited rounds and all game modes!</p>
+          <button
+            onClick={()=>router.push('/signin')}
+            className="bg-purple-400 hover:bg-purple-500 text-white px-6 py-3 rounded shadow text-lg">
+            Sign In / Register
+          </button>
+        </div>
+      </div>
+    );
+
+  /* summary for signed users */
+  if(showSum)
+    return(
+      <DndProvider backend={HTML5Backend}>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 p-4">
+          <div className="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-6xl w-full text-purple-800">
+            <h2 className="text-4xl font-bold mb-6 text-center">Session Summary</h2>
+            {results.map(r=>(
+              <div key={r.round} className="mb-6">
+                <h3 className="font-semibold">Round {r.round} — {r.correct?'✅ Correct':'❌ Wrong'}</h3>
+                <p>Your answer: {r.chosen.join(' • ')}</p>
+                <p className="italic">Correct sentence: {r.correctSentence}</p>
+              </div>
+            ))}
+            <button
+              onClick={restart}
+              className="mt-4 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-5 rounded-xl shadow w-full text-xl">
+              Play Again
+            </button>
+          </div>
+        </div>
+      </DndProvider>
+    );
+
+  /* waiting sentence */
+  if(!entry)
+    return(
+      <DndProvider backend={HTML5Backend}>
+        <div className="min-h-screen flex items-center justify-center text-xl">Loading…</div>
+      </DndProvider>
+    );
+
+  /* ===== In-game UI ===== */
   const parts = entry.sentence.split('___');
-  const usedIds = filledWords.filter(Boolean).map(item => item!.id);
-  const availableWords = words.filter(w => !usedIds.includes(w.id));
+  const usedIds=filled.filter(Boolean).map(w=>w!.id);
+  const avail=pool.filter(w=>!usedIds.includes(w.id));
 
-  return (
+  return(
     <DndProvider backend={HTML5Backend}>
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200">
-        <div className="bg-white/90 backdrop-blur-md p-6 rounded-2xl shadow-2xl max-w-2xl w-full text-purple-800">
-          <h2 className="text-2xl font-bold mb-4 text-center">Complete the Sentence</h2>
+        <div className="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-6xl w-full text-purple-800">
+          <h2 className="text-3xl font-bold mb-6 text-center">
+            Round {round} / {isGuest?GUEST_ROUNDS:USER_ROUNDS}
+          </h2>
 
-          <p className="text-xl mb-6 text-center">
-            {parts.map((part, idx) => (
-              <span key={idx}>
+          <p dir="rtl" className="text-2xl mb-8 text-center">
+            {parts.map((part,i)=>(
+              <span key={i}>
                 {part}
-                {idx < 3 && (
-                  <DropZone index={idx} word={filledWords[idx]} onDrop={handleDrop} />
-                )}
+                {i<3&&<Blank index={i} word={filled[i]} onDrop={dropBlank}/>}
               </span>
             ))}
           </p>
 
-          <div className="flex flex-wrap justify-center gap-4 mb-6">
-            {availableWords.map(({ id, word }) => (
-              <DraggableWord key={id} id={id} word={word} />
-            ))}
-          </div>
+          <WordPool words={avail} onDropBack={returnToPool}/>
 
-          {!submitted ? (
-            <button
-              onClick={checkAnswers}
-              className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-2 px-4 rounded-xl shadow"
-            >
-              Submit
-            </button>
-          ) : (
+          {!submitted?(
+            <>
+              <button onClick={submit}
+                className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-6 rounded-xl shadow text-lg">
+                Submit
+              </button>
+              <button onClick={()=>setFilled([null,null,null])}
+                className="mt-3 bg-gray-400 hover:bg-gray-500 text-white font-semibold py-3 px-6 rounded-xl shadow text-lg">
+                Reset Sentence
+              </button>
+            </>
+          ):(
             <div className="text-center">
-              <p className="text-lg font-semibold mb-4">{feedback}</p>
-              <button
-                onClick={resetGame}
-                className="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-xl shadow"
-              >
-                Play Again
+              <p className="text-2xl font-semibold mb-3">{feedback}</p>
+              {showCorrect&&<p className="italic text-lg mb-3">Correct sentence: {build(entry)}</p>}
+              <button onClick={next}
+                className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-xl shadow text-lg">
+                {round<(isGuest?GUEST_ROUNDS:USER_ROUNDS)?'Next Round':'Finish'}
               </button>
             </div>
           )}
@@ -128,36 +233,43 @@ export default function SentenceGamePage() {
   );
 }
 
-function DraggableWord({ word, id }: { word: string; id: string }) {
-  const [{ isDragging }, drag] = useDrag(() => ({
-    type: ItemType.WORD,
-    item: { id, word },
-    collect: (monitor) => ({ isDragging: !!monitor.isDragging() }),
+/* ────────── child components ────────── */
+function DraggableWord({word,id}:WordItem){
+  const[{isDragging},drag]=useDrag(()=>({
+    type:ItemType.WORD,item:{id,word},collect:m=>({isDragging:!!m.isDragging()})
   }));
-
-  return (
-    <div
-      ref={drag}
-      className={`w-32 h-12 flex items-center justify-center rounded-xl shadow bg-white border border-purple-300 text-lg font-medium cursor-move transition-opacity ${isDragging ? 'opacity-30' : 'opacity-100'}`}
-    >
+  return(
+    <div ref={drag}
+      className={`w-36 h-14 flex items-center justify-center rounded-xl shadow bg-white border border-purple-300 text-xl font-medium cursor-move transition-opacity ${
+        isDragging?'opacity-30':'opacity-100'}`}>
       {word}
-    </div>
-  );
+    </div>);
 }
 
-function DropZone({ index, word, onDrop }: { index: number; word: WordItem | null; onDrop: (i: number, word: WordItem) => void }) {
-  const [{ isOver }, drop] = useDrop(() => ({
-    accept: ItemType.WORD,
-    drop: (item: WordItem) => onDrop(index, item),
-    collect: (monitor) => ({ isOver: !!monitor.isOver() }),
+function Blank({index,word,onDrop}:{index:number;word:WordItem|null;onDrop:(i:number,it:WordItem)=>void;}){
+  const[{isOver},drop]=useDrop(()=>({
+    accept:ItemType.WORD,
+    drop:(it:WordItem)=>onDrop(index,it),
+    collect:m=>({isOver:!!m.isOver()})
   }));
+  const[{isDragging},drag]=useDrag(()=>({
+    type:ItemType.WORD,item:word!,canDrag:!!word,
+    collect:m=>({isDragging:!!m.isDragging()})
+  }));
+  return(
+    <span ref={drop}
+      className={`inline-block w-32 h-10 mx-2 rounded-md border-b-2 border-purple-400 text-center ${
+        isOver?'bg-purple-100':'bg-white'}`}>
+      {word?(
+        <span ref={drag} className={`inline-block cursor-move ${isDragging?'opacity-30':''}`}>{word.word}</span>
+      ):'‎'}
+    </span>);
+}
 
-  return (
-    <span
-      ref={drop}
-      className={`inline-block w-24 h-8 mx-1 rounded-md border-b-2 border-purple-400 text-center ${isOver ? 'bg-purple-100' : 'bg-white'}`}
-    >
-      {word?.word || '⬜'}
-    </span>
-  );
+function WordPool({words,onDropBack}:{words:WordItem[];onDropBack:(it:WordItem)=>void;}){
+  const [,drop]=useDrop(()=>({accept:ItemType.WORD,drop:onDropBack}),[onDropBack]);
+  return(
+    <div ref={drop} className="flex flex-wrap justify-center gap-4 mb-8 min-h-16">
+      {words.map(({id,word})=><DraggableWord key={id} id={id} word={word}/>)}
+    </div>);
 }
