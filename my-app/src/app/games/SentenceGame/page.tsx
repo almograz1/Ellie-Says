@@ -9,57 +9,51 @@ import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { app } from '../../../firebase';
 
-/* ────────── constants ────────── */
-const GUEST_ROUNDS = 3;             // guests get 3 rounds total
-const USER_ROUNDS  = 5;             // signed users get 5
-const STORAGE_KEY  = 'sentenceGuestPlayed';
+/* ── constants ── */
+const GUEST_ROUNDS = 3;
+const USER_ROUNDS  = 5;
 const ItemType = { WORD: 'word' } as const;
 
-/* ────────── data types ────────── */
+/* ── types ── */
 interface SentenceEntry { sentence: string; missingWords: string[]; distractors: string[]; }
 interface WordItem       { id: string; word: string; }
 interface RoundResult    { round: number; chosen: string[]; correct: boolean; correctSentence: string; }
 
-/* ────────── main page ────────── */
+/* ── main component ── */
 export default function SentenceGamePage() {
   const router = useRouter();
 
-  /* auth / guest detection */
-  const [hydrated, setHydrated] = useState(false);
-  const [isGuest,  setIsGuest]  = useState<boolean | null>(null);
-  const [trialUsed,setTrialUsed]= useState(false);   // already played 3-round trial?
+  /* auth */
+  const [hydrated,setHydrated] = useState(false);
+  const [isGuest,setIsGuest]   = useState<boolean|null>(null);
 
-  /* UI states */
-  const [limitPrompt,setLimitPrompt]=useState(false); // show sign-in prompt
-  const [round,setRound]     = useState(1);
-  const [entry,setEntry]     = useState<SentenceEntry|null>(null);
-  const [pool,setPool]       = useState<WordItem[]>([]);
-  const [filled,setFilled]   = useState<(WordItem|null)[]>([null,null,null]);
-  const [feedback,setFB]     = useState<string|null>(null);
-  const [submitted,setSub]   = useState(false);
+  /* round counter & prompt */
+  const [round,setRound]   = useState(1);
+  const [prompt,setPrompt] = useState(false);   // show sign-in UI?
+
+  /* game states */
+  const [entry,setEntry]   = useState<SentenceEntry|null>(null);
+  const [pool,setPool]     = useState<WordItem[]>([]);
+  const [filled,setFilled] = useState<(WordItem|null)[]>([null,null,null]);
+  const [feedback,setFB]   = useState<string|null>(null);
+  const [submitted,setSub] = useState(false);
   const [showCorrect,setShowCorrect] = useState(false);
   const [results,setResults] = useState<RoundResult[]>([]);
   const [usedSent,setUsed]   = useState<string[]>([]);
-  const [showSum,setShowSum] = useState(false);      // summary for signed users
+  const [showSum,setShowSum] = useState(false);
 
-  /* ───── hydrate & auth listener ───── */
-  useEffect(() => { setHydrated(true); }, []);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    const unsub = onAuthStateChanged(getAuth(app), user => {
-      const guest = !user;
-      setIsGuest(guest);
-      setTrialUsed(localStorage.getItem(STORAGE_KEY) === 'done');
-      if (guest && localStorage.getItem(STORAGE_KEY) === 'done')
-        setLimitPrompt(true);
+  /* hydrate + auth */
+  useEffect(()=>{ setHydrated(true); },[]);
+  useEffect(()=>{
+    if(!hydrated) return;
+    const unsub = onAuthStateChanged(getAuth(app),u=>{
+      setIsGuest(!u);
     });
-    return () => unsub();
-  }, [hydrated]);
+    return ()=>unsub();
+  },[hydrated]);
 
-  /* ───── helpers ───── */
-  const build = (e:SentenceEntry)=>
-    e.missingWords.reduce((s,w)=>s.replace('___',w),e.sentence);
+  /* helper */
+  const build = (e:SentenceEntry)=> e.missingWords.reduce((s,w)=>s.replace('___',w),e.sentence);
 
   const loadSentence = useCallback((prevUsed:string[])=>{
     let pick:SentenceEntry;
@@ -68,21 +62,20 @@ export default function SentenceGamePage() {
     while(prevUsed.includes(pick.sentence)&&prevUsed.length<total);
 
     const shuffled=[...pick.missingWords,...pick.distractors]
-      .sort(()=>.5-Math.random())
-      .map((w,i)=>({id:`${w}-${i}`,word:w}));
+      .sort(()=>.5-Math.random()).map((w,i)=>({id:`${w}-${i}`,word:w}));
 
-    setEntry(pick);
-    setPool(shuffled);
+    setEntry(pick); setPool(shuffled);
     setFilled([null,null,null]);
     setFB(null); setSub(false); setShowCorrect(false);
     setUsed([...prevUsed,pick.sentence]);
   },[]);
 
-  /* first load if allowed */
+  /* first load */
   useEffect(()=>{
-    if(isGuest===null||limitPrompt) return;
+    if(isGuest===null) return;
+    if(isGuest&&prompt) return;            // guest already finished 3 rounds
     loadSentence([]);
-  },[isGuest,limitPrompt,loadSentence]);
+  },[isGuest,prompt,loadSentence]);
 
   /* drag handlers */
   const dropBlank=(i:number,it:WordItem)=>{
@@ -94,13 +87,12 @@ export default function SentenceGamePage() {
   };
   const returnToPool=(it:WordItem)=> setFilled(cur=>cur.map(w=>w?.id===it.id?null:w));
 
-  /* submit round */
+  /* submit */
   const submit=()=>{
     if(!entry) return;
     const correct = filled.every((w,i)=>w?.word===entry.missingWords[i]);
-    setFB(correct?'✅ Great job!':'❌ Some words are incorrect.');
-    setShowCorrect(!correct);
-    setSub(true);
+    setFB(correct?'✅ Great job!' : '❌ Some words are incorrect.');
+    setShowCorrect(!correct); setSub(true);
     setResults(r=>[...r,{
       round,correct,
       chosen:filled.map(w=>w?.word||'(blank)'),
@@ -108,41 +100,36 @@ export default function SentenceGamePage() {
     }]);
   };
 
-  /* after Submit → next or prompt */
+  /* after Submit */
   const next=()=>{
-    const maxRounds = (isGuest?GUEST_ROUNDS:USER_ROUNDS);
-    if(round < maxRounds){
+    const maxR = isGuest?GUEST_ROUNDS:USER_ROUNDS;
+    if(round < maxR){
       setRound(r=>r+1);
       loadSentence(usedSent);
     }else{
       if(isGuest){
-        localStorage.setItem(STORAGE_KEY,'done');
-        setLimitPrompt(true);
+        setPrompt(true);          // show sign-up prompt
       }else{
         setShowSum(true);
       }
     }
   };
 
-  /* signed-in summary restart */
-  const restart=()=>{
-    setRound(1); setResults([]); setUsed([]); setShowSum(false);
+  const restartSigned = ()=>{
+    setRound(1);setUsed([]);setResults([]);setShowSum(false);
     loadSentence([]);
   };
 
-  /* ───── render branches ───── */
-
+  /* ── render branches ── */
   if(!hydrated||isGuest===null) return <div className="min-h-screen flex items-center justify-center text-xl">Loading…</div>;
 
-  /* trial-end prompt */
-  if(limitPrompt)
+  if(prompt)
     return(
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 p-6">
         <div className="bg-white/90 backdrop-blur-md p-10 rounded-2xl shadow-2xl max-w-xl w-full text-center text-purple-800">
           <h2 className="text-3xl font-bold mb-6">🎮 Want More Games?</h2>
           <p className="text-xl mb-6">Sign up to play unlimited rounds and all game modes!</p>
-          <button
-            onClick={()=>router.push('/signin')}
+          <button onClick={()=>router.push('/signin')}
             className="bg-purple-400 hover:bg-purple-500 text-white px-6 py-3 rounded shadow text-lg">
             Sign In / Register
           </button>
@@ -150,7 +137,6 @@ export default function SentenceGamePage() {
       </div>
     );
 
-  /* summary for signed users */
   if(showSum)
     return(
       <DndProvider backend={HTML5Backend}>
@@ -164,8 +150,7 @@ export default function SentenceGamePage() {
                 <p className="italic">Correct sentence: {r.correctSentence}</p>
               </div>
             ))}
-            <button
-              onClick={restart}
+            <button onClick={restartSigned}
               className="mt-4 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-5 rounded-xl shadow w-full text-xl">
               Play Again
             </button>
@@ -174,7 +159,6 @@ export default function SentenceGamePage() {
       </DndProvider>
     );
 
-  /* waiting sentence */
   if(!entry)
     return(
       <DndProvider backend={HTML5Backend}>
@@ -182,8 +166,8 @@ export default function SentenceGamePage() {
       </DndProvider>
     );
 
-  /* ===== In-game UI ===== */
-  const parts = entry.sentence.split('___');
+  /* ---- game UI ---- */
+  const parts=entry.sentence.split('___');
   const usedIds=filled.filter(Boolean).map(w=>w!.id);
   const avail=pool.filter(w=>!usedIds.includes(w.id));
 
@@ -233,23 +217,21 @@ export default function SentenceGamePage() {
   );
 }
 
-/* ────────── child components ────────── */
+/* ── child components ── */
 function DraggableWord({word,id}:WordItem){
   const[{isDragging},drag]=useDrag(()=>({
     type:ItemType.WORD,item:{id,word},collect:m=>({isDragging:!!m.isDragging()})
   }));
   return(
     <div ref={drag}
-      className={`w-36 h-14 flex items-center justify-center rounded-xl shadow bg-white border border-purple-300 text-xl font-medium cursor-move transition-opacity ${
-        isDragging?'opacity-30':'opacity-100'}`}>
+      className={`w-36 h-14 flex items-center justify-center rounded-xl shadow bg-white border border-purple-300 text-xl font-medium cursor-move transition-opacity ${isDragging?'opacity-30':'opacity-100'}`}>
       {word}
     </div>);
 }
 
 function Blank({index,word,onDrop}:{index:number;word:WordItem|null;onDrop:(i:number,it:WordItem)=>void;}){
   const[{isOver},drop]=useDrop(()=>({
-    accept:ItemType.WORD,
-    drop:(it:WordItem)=>onDrop(index,it),
+    accept:ItemType.WORD,drop:(it:WordItem)=>onDrop(index,it),
     collect:m=>({isOver:!!m.isOver()})
   }));
   const[{isDragging},drag]=useDrag(()=>({
@@ -261,7 +243,9 @@ function Blank({index,word,onDrop}:{index:number;word:WordItem|null;onDrop:(i:nu
       className={`inline-block w-32 h-10 mx-2 rounded-md border-b-2 border-purple-400 text-center ${
         isOver?'bg-purple-100':'bg-white'}`}>
       {word?(
-        <span ref={drag} className={`inline-block cursor-move ${isDragging?'opacity-30':''}`}>{word.word}</span>
+        <span ref={drag} className={`inline-block cursor-move ${isDragging?'opacity-30':''}`}>
+          {word.word}
+        </span>
       ):'‎'}
     </span>);
 }
