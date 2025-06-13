@@ -9,6 +9,7 @@
   "private": true,
   "dependencies": {
     "@google/genai": "^1.5.0",
+    "@google/generative-ai": "^0.24.1",
     "dotenv": "^16.5.0",
     "firebase": "^11.8.1",
     "react-dnd": "^16.0.1",

@@ -1,0 +1,121 @@
+[
+  {
+    "hebrewWord": "חָלָב",
+    "options": ["milk", "bread", "water", "apple"],
+    "correctIndex": 0,
+    "clueSentence": "אֲנִי שׁוֹתֶה חָלָב קַר.",
+    "clueEmoji": "🥛"
+  },
+  {
+    "hebrewWord": "לֶחֶם",
+    "options": ["cheese", "bread", "banana", "coffee"],
+    "correctIndex": 1,
+    "clueSentence": "אֲנִי אוֹכֵל לֶחֶם טָרִי בַּבֹּקֶר.",
+    "clueEmoji": "🍞"
+  },
+  {
+    "hebrewWord": "שׁוֹקוֹלָד",
+    "options": ["apple", "chocolate", "milk", "rice"],
+    "correctIndex": 1,
+    "clueSentence": "הִיא אוֹהֶבֶת לֶאֱכוֹל שׁוֹקוֹלָד מָתוֹק.",
+    "clueEmoji": "🍫"
+  },
+  {
+    "hebrewWord": "תַּפּוּחַ",
+    "options": ["sugar", "carrot", "apple", "fish"],
+    "correctIndex": 2,
+    "clueSentence": "אֲנִי לוֹקֵחַ תַּפּוּחַ לַחֲטִיף.",
+    "clueEmoji": "🍎"
+  },
+  {
+    "hebrewWord": "מַיִם",
+    "options": ["juice", "water", "tea", "bread"],
+    "correctIndex": 1,
+    "clueSentence": "צָרִיךְ לִשְׁתּוֹת הַרְבֵּה מַיִם.",
+    "clueEmoji": "💧"
+  },
+  {
+    "hebrewWord": "גְּבִינָה",
+    "options": ["cheese", "banana", "coffee", "meat"],
+    "correctIndex": 0,
+    "clueSentence": "הוּא אוֹהֵב כָּרִיךְ עִם גְּבִינָה צָהֳבָה.",
+    "clueEmoji": "🧀"
+  },
+  {
+    "hebrewWord": "קָפֶה",
+    "options": ["tea", "milk", "coffee", "orange"],
+    "correctIndex": 2,
+    "clueSentence": "אֲנִי מַכִּין סֵפֶל קָפֶה חַם בַּבֹּקֶר.",
+    "clueEmoji": "☕"
+  },
+  {
+    "hebrewWord": "דְּבַשׁ",
+    "options": ["honey", "salt", "pepper", "butter"],
+    "correctIndex": 0,
+    "clueSentence": "הַיֶּלֶד אוֹהֵב פִּתָּה עִם דְּבַשׁ.",
+    "clueEmoji": "🍯"
+  },
+  {
+    "hebrewWord": "דָּג",
+    "options": ["fish", "cake", "rice", "egg"],
+    "correctIndex": 0,
+    "clueSentence": "אֲנִי מְבַשֵּׁל דָּג עָל הַגַּרִיל.",
+    "clueEmoji": "🐟"
+  },
+  {
+    "hebrewWord": "בֵּיצָה",
+    "options": ["cheese", "egg", "tomato", "soup"],
+    "correctIndex": 1,
+    "clueSentence": "בַּשַּׁבָּת אֲנִי אוֹכֵל בֵּיצָה רַכָּה.",
+    "clueEmoji": "🥚"
+  },
+  {
+    "hebrewWord": "אוֹרֶז",
+    "options": ["rice", "coffee", "orange", "salt"],
+    "correctIndex": 0,
+    "clueSentence": "הַתַּבְשִׁיל מֻגָּשׁ עִם אוֹרֶז לָבָן.",
+    "clueEmoji": "🍚"
+  },
+  {
+    "hebrewWord": "מֶלַח",
+    "options": ["sugar", "pepper", "salt", "honey"],
+    "correctIndex": 2,
+    "clueSentence": "אֲנִי מוֹסִיף מֶלַח לַמָּנָה.",
+    "clueEmoji": "🧂"
+  },
+  {
+    "hebrewWord": "סֻוכָּר",
+    "options": ["salt", "bread", "sugar", "rice"],
+    "correctIndex": 2,
+    "clueSentence": "קָפֶה בְּלִי סֻכָּר הוּא מְרִיר.",
+    "clueEmoji": "🍬"
+  },
+  {
+    "hebrewWord": "עֲגבנְיָה",
+    "options": ["tomato", "banana", "onion", "garlic"],
+    "correctIndex": 0,
+    "clueSentence": "אֲנִי חוֹתֵךְ עֲגוּנְיָה לַסָּלָט.",
+    "clueEmoji": "🍅"
+  },
+  {
+    "hebrewWord": "בָּשר",
+    "options": ["meat", "milk", "bread", "water"],
+    "correctIndex": 0,
+    "clueSentence": "הֵם אוֹהֲבִים בָּסָר עָסִיסִי.",
+    "clueEmoji": "🥩"
+  },
+  {
+    "hebrewWord": "גֶּזֶר",
+    "options": ["carrot", "cheese", "honey", "egg"],
+    "correctIndex": 0,
+    "clueSentence": "אַרְנֶבֶת אוֹהֶבֶת לֶאֱכוֹל גֶּזֶר.",
+    "clueEmoji": "🥕"
+  },
+  {
+    "hebrewWord": "עֲנָבִים",
+    "options": ["grapes", "coffee", "pepper", "rice"],
+    "correctIndex": 0,
+    "clueSentence": "הַיְּלָדִים אוֹכְלִים עֲנָבִים מָתוֹקִים.",
+    "clueEmoji": "🍇"
+  }
+]
