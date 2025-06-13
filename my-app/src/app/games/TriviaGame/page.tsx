@@ -6,130 +6,132 @@ import {
   getFirestore,
   collection,
   addDoc,
-  serverTimestamp,
-  getDocs
+  serverTimestamp
 } from 'firebase/firestore';
 import { app } from '../../../firebase';
 
-interface WordEntry {
-  english: string;
+/* ---------- server-payload types ---------- */
+interface TriviaRound {
+  hebrewWord: string;
+  options: string[];       // 4 English words
+  correctIndex: number;    // 0-3
+  clueSentence: string;
+  clueEmoji: string;
+}
+
+interface AnswerLog {
   hebrew: string;
-  sentence: string;
-  emoji: string;
+  correct: string;
+  selected: string;
+  result: 'Correct' | 'Wrong';
 }
 
-function getRandomEntries(entries: WordEntry[], count: number): WordEntry[] {
-  return [...entries].sort(() => 0.5 - Math.random()).slice(0, count);
-}
-
-function getOptions(correct: WordEntry, all: WordEntry[]): string[] {
-  const others = all.filter(e => e.english !== correct.english);
-  const options = getRandomEntries(others, 3).map(e => e.english);
-  options.push(correct.english);
-  return options.sort(() => 0.5 - Math.random());
-}
+/* ---------- helpers ---------- */
+const ROUNDS_FOR_SIGNED   = 5;
+const ROUNDS_FOR_GUEST    = 3;
 
 export default function TriviaGamePage() {
-  const [wordPairs, setWordPairs] = useState<WordEntry[]>([]);
-  const [questions, setQuestions] = useState<WordEntry[]>([]);
+  /* ---------- state ---------- */
+  const [questions, setQuestions] = useState<TriviaRound[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [options, setOptions] = useState<string[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [score, setScore] = useState(0);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [showSummary, setShowSummary] = useState(false);
-  const [answers, setAnswers] = useState<any[]>([]);
+  const [answers, setAnswers] = useState<AnswerLog[]>([]);
   const [showSentence, setShowSentence] = useState(false);
   const [showEmoji, setShowEmoji] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
 
   const auth = getAuth(app);
-  const db = getFirestore(app);
+  const db   = getFirestore(app);
 
-  useEffect(() => {
-    const fetchWords = async () => {
-      const snapshot = await getDocs(collection(db, 'trivia_words'));
-      const words: WordEntry[] = snapshot.docs.map(doc => doc.data() as WordEntry);
-      const user = auth.currentUser;
-      const guest = !user;
-      setIsGuest(guest);
+  /* ---------- fetch N fresh rounds ---------- */
+  const loadRounds = async () => {
+    setIsLoading(true);
+    const guest = !auth.currentUser;
+    setIsGuest(guest);
+    const roundsNeeded = guest ? ROUNDS_FOR_GUEST : ROUNDS_FOR_SIGNED;
 
-      const selectedQuestions = getRandomEntries(words, guest ? 3 : 5);
-      setWordPairs(words);
-      setQuestions(selectedQuestions);
-      setOptions(getOptions(selectedQuestions[0], words));
+    try {
+      /* call our API N times in parallel */
+      const resArr = await Promise.all(
+        Array.from({ length: roundsNeeded }, () =>
+          fetch('/api/trivia-round').then(r => r.json())
+        )
+      );
+      setQuestions(resArr as TriviaRound[]);
+      setCurrentIndex(0);
+      setSelected(null);
+      setScore(0);
+      setAnswers([]);
+      setShowSentence(false);
+      setShowEmoji(false);
+      setShowSummary(false);
+    } catch (err) {
+      console.error('Failed to load trivia rounds:', err);
+    } finally {
       setIsLoading(false);
-    };
+    }
+  };
 
-    fetchWords();
-  }, []);
+  /* ---------- initial load ---------- */
+  useEffect(() => { loadRounds(); }, []);
 
+  /* ---------- answer selection ---------- */
   const handleSelect = (option: string) => {
-    if (selected) return;
+    if (selected) return;                 // already answered
     setSelected(option);
-    setShowFeedback(true);
-    const correct = questions[currentIndex].english;
+
+    const q = questions[currentIndex];
+    const correct = q.options[q.correctIndex];
     const isCorrect = option === correct;
     if (isCorrect) setScore(prev => prev + 1);
-    setAnswers(prev => [...prev, {
-      hebrew: questions[currentIndex].hebrew,
-      correct,
-      selected: option,
-      result: isCorrect ? 'Correct' : 'Wrong'
-    }]);
+
+    setAnswers(prev => [
+      ...prev,
+      { hebrew: q.hebrewWord, correct, selected: option, result: isCorrect ? 'Correct' : 'Wrong' }
+    ]);
+
+    /* short delay then next question or summary */
     setTimeout(() => {
-      const next = currentIndex + 1;
-      if (next >= questions.length) {
+      if (currentIndex + 1 >= questions.length) {
         setShowSummary(true);
-        if (!isGuest) saveResults();
+        if (!isGuest) saveResults(score + (isCorrect ? 1 : 0));  // final score
       } else {
-        setCurrentIndex(next);
-        setOptions(getOptions(questions[next], wordPairs));
+        setCurrentIndex(i => i + 1);
         setSelected(null);
-        setShowFeedback(false);
         setShowSentence(false);
         setShowEmoji(false);
       }
     }, 1200);
   };
 
-  const saveResults = async () => {
+  /* ---------- save signed-in results ---------- */
+  const saveResults = async (finalScore: number) => {
     const user = auth.currentUser;
     if (!user) return;
     try {
       await addDoc(collection(db, 'trivia_results'), {
         uid: user.uid,
-        score,
+        score: finalScore,
         answers,
         createdAt: serverTimestamp()
       });
-    } catch (error) {
-      console.error('Error saving results:', error);
+    } catch (e) {
+      console.error('Error saving results:', e);
     }
   };
 
-  const restart = async () => {
-    setIsLoading(true);
-    const snapshot = await getDocs(collection(db, 'trivia_words'));
-    const words: WordEntry[] = snapshot.docs.map(doc => doc.data() as WordEntry);
-    const selectedQuestions = getRandomEntries(words, isGuest ? 3 : 5);
-    setWordPairs(words);
-    setQuestions(selectedQuestions);
-    setCurrentIndex(0);
-    setOptions(getOptions(selectedQuestions[0], words));
-    setSelected(null);
-    setScore(0);
-    setAnswers([]);
-    setShowSummary(false);
-    setShowFeedback(false);
-    setShowSentence(false);
-    setShowEmoji(false);
-    setIsLoading(false);
-  };
+  /* ---------- restart ---------- */
+  const restart = () => loadRounds();
 
+  /* ---------- loading ---------- */
   if (isLoading) return <div>Loading game...</div>;
 
+  const q = questions[currentIndex];
+
+  /* ---------- UI ---------- */
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 p-10 text-purple-800 text-xl">
       {!showSummary ? (
@@ -137,7 +139,7 @@ export default function TriviaGamePage() {
           <p className="text-lg mb-2">Round {currentIndex + 1} / {questions.length}</p>
           <h1 className="text-4xl font-bold mb-2">What does this word mean?</h1>
           <h2 className="text-6xl font-extrabold text-purple-700 mb-6" dir="rtl">
-            {questions[currentIndex].hebrew}
+            {q.hebrewWord}
           </h2>
 
           <div className="flex justify-center gap-6 mb-6">
@@ -155,17 +157,17 @@ export default function TriviaGamePage() {
             </button>
           </div>
 
-          {showSentence && <p className="mb-4 italic text-lg">{questions[currentIndex].sentence}</p>}
-          {showEmoji && <p className="text-4xl mb-6">{questions[currentIndex].emoji}</p>}
+          {showSentence && <p className="mb-4 italic text-lg">{q.clueSentence}</p>}
+          {showEmoji && <p className="text-4xl mb-6">{q.clueEmoji}</p>}
 
           <div className="grid grid-cols-2 gap-6">
-            {options.map(opt => (
+            {q.options.map(opt => (
               <button
                 key={opt}
                 onClick={() => handleSelect(opt)}
                 className={`w-full py-4 rounded-lg shadow-md text-2xl transition-all
                   ${selected
-                    ? opt === questions[currentIndex].english
+                    ? opt === q.options[q.correctIndex]
                       ? 'bg-green-300'
                       : opt === selected
                         ? 'bg-red-300'
@@ -179,27 +181,26 @@ export default function TriviaGamePage() {
 
           {selected && (
             <p className="mt-6 text-2xl font-semibold">
-              {selected === questions[currentIndex].english ? "You're Right! ✅" : "Oops! That's not it ❌"}
+              {selected === q.options[q.correctIndex] ? "You're Right! ✅" : "Oops! That's not it ❌"}
             </p>
           )}
 
           <p className="mt-4 text-base">Score: {score}</p>
         </div>
       ) : (
+        /* ---------- summary modals ---------- */
         isGuest ? (
           <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center">
             <h2 className="text-3xl font-bold mb-6">🎮 Want More Games?</h2>
             <p className="text-xl mb-6">
               If you enjoyed this game, sign up for full access to more rounds and all game modes!
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                onClick={() => window.location.href = '/signin'}
-                className="bg-purple-400 hover:bg-purple-500 text-white px-6 py-3 rounded shadow text-lg"
-              >
-                Sign In / Register
-              </button>
-            </div>
+            <button
+              onClick={() => (window.location.href = '/signin')}
+              className="bg-purple-400 hover:bg-purple-500 text-white px-6 py-3 rounded shadow text-lg"
+            >
+              Sign In / Register
+            </button>
           </div>
         ) : (
           <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center">

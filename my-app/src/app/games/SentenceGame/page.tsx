@@ -1,10 +1,8 @@
 'use client';
 
-import React from 'react';
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import sentenceData from '@/data/sentenceData.json';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { app } from '../../../firebase';
@@ -12,12 +10,16 @@ import { app } from '../../../firebase';
 /* ── constants ── */
 const GUEST_ROUNDS = 3;
 const USER_ROUNDS  = 5;
-const ItemType = { WORD: 'word' } as const;
+const ItemType     = { WORD: 'word' } as const;
 
-/* ── types ── */
-interface SentenceEntry { sentence: string; missingWords: string[]; distractors: string[]; }
-interface WordItem       { id: string; word: string; }
-interface RoundResult    { round: number; chosen: string[]; correct: boolean; correctSentence: string; }
+/* ── types from API ── */
+interface SentenceEntry {
+  sentenceTemplate: string;     // e.g. "אני ___ הולך ___ כי אני ___"
+  missingWords: string[];       // exactly 3, in order
+  distractors: string[];        // 3-4 random extras
+}
+interface WordItem    { id: string; word: string }
+interface RoundResult { round: number; chosen: string[]; correct: boolean; correctSentence: string }
 
 /* ── main component ── */
 export default function SentenceGamePage() {
@@ -27,11 +29,11 @@ export default function SentenceGamePage() {
   const [hydrated,setHydrated] = useState(false);
   const [isGuest,setIsGuest]   = useState<boolean|null>(null);
 
-  /* round counter & prompt */
+  /* round counter & guest prompt */
   const [round,setRound]   = useState(1);
-  const [prompt,setPrompt] = useState(false);   // show sign-in UI?
+  const [prompt,setPrompt] = useState(false);
 
-  /* game states */
+  /* game state */
   const [entry,setEntry]   = useState<SentenceEntry|null>(null);
   const [pool,setPool]     = useState<WordItem[]>([]);
   const [filled,setFilled] = useState<(WordItem|null)[]>([null,null,null]);
@@ -42,38 +44,57 @@ export default function SentenceGamePage() {
   const [usedSent,setUsed]   = useState<string[]>([]);
   const [showSum,setShowSum] = useState(false);
 
-  /* hydrate + auth */
+  /* ── helpers ── */
+  const buildSentence = (e:SentenceEntry) =>
+    e.missingWords.reduce((s,w)=>s.replace('___',w),e.sentenceTemplate);
+
+  /** fetch one new round from /api/sentence-round */
+  const fetchSentence = async (): Promise<SentenceEntry|null> => {
+    try {
+      const r = await fetch('/api/sentence-round');
+      if (!r.ok) throw new Error('API ' + r.status);
+      return (await r.json()) as SentenceEntry;
+    } catch (err) {
+      console.error('Sentence API failed:', err);
+      return null;
+    }
+  };
+
+  /** load a unique sentence (avoid repeats this session) */
+  const loadSentence = useCallback(async (prevUsed:string[])=>{
+    let roundData:SentenceEntry|null=null;
+    for(let i=0;i<3;i++){                 // try up to 3 times for a fresh sentence
+      roundData = await fetchSentence();
+      if(roundData && !prevUsed.includes(roundData.sentenceTemplate)) break;
+    }
+    if(!roundData){ console.error('No sentence data'); return; }
+
+    /* build drag pool */
+    const allWords = [...roundData.missingWords, ...roundData.distractors]
+      .sort(()=>.5-Math.random())
+      .map((w,i)=>({id:`${w}-${i}`,word:w}));
+
+    setEntry(roundData);
+    setPool(allWords);
+    setFilled([null,null,null]);
+    setFB(null);
+    setSub(false);
+    setShowCorrect(false);
+    setUsed([...prevUsed,roundData.sentenceTemplate]);
+  },[]);
+
+  /* hydrate & auth */
   useEffect(()=>{ setHydrated(true); },[]);
   useEffect(()=>{
     if(!hydrated) return;
-    const unsub = onAuthStateChanged(getAuth(app),u=>{
-      setIsGuest(!u);
-    });
+    const unsub = onAuthStateChanged(getAuth(app),u=> setIsGuest(!u));
     return ()=>unsub();
   },[hydrated]);
-
-  /* helper */
-  const build = (e:SentenceEntry)=> e.missingWords.reduce((s,w)=>s.replace('___',w),e.sentence);
-
-  const loadSentence = useCallback((prevUsed:string[])=>{
-    let pick:SentenceEntry;
-    const total=sentenceData.length;
-    do { pick = sentenceData[Math.floor(Math.random()*total)]; }
-    while(prevUsed.includes(pick.sentence)&&prevUsed.length<total);
-
-    const shuffled=[...pick.missingWords,...pick.distractors]
-      .sort(()=>.5-Math.random()).map((w,i)=>({id:`${w}-${i}`,word:w}));
-
-    setEntry(pick); setPool(shuffled);
-    setFilled([null,null,null]);
-    setFB(null); setSub(false); setShowCorrect(false);
-    setUsed([...prevUsed,pick.sentence]);
-  },[]);
 
   /* first load */
   useEffect(()=>{
     if(isGuest===null) return;
-    if(isGuest&&prompt) return;            // guest already finished 3 rounds
+    if(isGuest && prompt) return;        // guest finished 3 rounds
     loadSentence([]);
   },[isGuest,prompt,loadSentence]);
 
@@ -82,7 +103,8 @@ export default function SentenceGamePage() {
     if(submitted) return;
     setFilled(cur=>{
       const n=cur.map(w=>w?.id===it.id?null:w);
-      n[i]=it; return n;
+      n[i]=it;
+      return n;
     });
   };
   const returnToPool=(it:WordItem)=> setFilled(cur=>cur.map(w=>w?.id===it.id?null:w));
@@ -91,87 +113,85 @@ export default function SentenceGamePage() {
   const submit=()=>{
     if(!entry) return;
     const correct = filled.every((w,i)=>w?.word===entry.missingWords[i]);
-    setFB(correct?'✅ Great job!' : '❌ Some words are incorrect.');
-    setShowCorrect(!correct); setSub(true);
+    setFB(correct?'✅ Great job!':'❌ Some words are incorrect.');
+    setShowCorrect(!correct);
+    setSub(true);
     setResults(r=>[...r,{
       round,correct,
       chosen:filled.map(w=>w?.word||'(blank)'),
-      correctSentence:build(entry)
+      correctSentence:buildSentence(entry)
     }]);
   };
 
-  /* after Submit */
+  /* next round / finish */
   const next=()=>{
     const maxR = isGuest?GUEST_ROUNDS:USER_ROUNDS;
     if(round < maxR){
       setRound(r=>r+1);
       loadSentence(usedSent);
     }else{
-      if(isGuest){
-        setPrompt(true);          // show sign-up prompt
-      }else{
-        setShowSum(true);
-      }
+      if(isGuest) setPrompt(true);
+      else        setShowSum(true);
     }
   };
 
-  const restartSigned = ()=>{
+  const restartSigned=()=>{
     setRound(1);setUsed([]);setResults([]);setShowSum(false);
     loadSentence([]);
   };
 
-  /* ── render branches ── */
+  /* ── render guards ── */
   if(!hydrated||isGuest===null) return <div className="min-h-screen flex items-center justify-center text-xl">Loading…</div>;
 
-  if(prompt)
-    return(
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 p-6">
-        <div className="bg-white/90 backdrop-blur-md p-10 rounded-2xl shadow-2xl max-w-xl w-full text-center text-purple-800">
-          <h2 className="text-3xl font-bold mb-6">🎮 Want More Games?</h2>
-          <p className="text-xl mb-6">Sign up to play unlimited rounds and all game modes!</p>
-          <button onClick={()=>router.push('/signin')}
-            className="bg-purple-400 hover:bg-purple-500 text-white px-6 py-3 rounded shadow text-lg">
-            Sign In / Register
+  /* ---------- guest prompt ---------- */
+  if(prompt) return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 p-6">
+      <div className="bg-white/90 backdrop-blur-md p-10 rounded-2xl shadow-2xl max-w-xl w-full text-center text-purple-800">
+        <h2 className="text-3xl font-bold mb-6">🎮 Want More Games?</h2>
+        <p className="text-xl mb-6">Sign up to play unlimited rounds and all game modes!</p>
+        <button onClick={()=>router.push('/signin')}
+          className="bg-purple-400 hover:bg-purple-500 text-white px-6 py-3 rounded shadow text-lg">
+          Sign In / Register
+        </button>
+      </div>
+    </div>
+  );
+
+  /* ---------- signed-in summary ---------- */
+  if(showSum) return (
+    <DndProvider backend={HTML5Backend}>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 p-4">
+        <div className="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-6xl w-full text-purple-800">
+          <h2 className="text-4xl font-bold mb-6 text-center">Session Summary</h2>
+          {results.map(r=>(
+            <div key={r.round} className="mb-6">
+              <h3 className="font-semibold">Round {r.round} — {r.correct?'✅ Correct':'❌ Wrong'}</h3>
+              <p>Your answer: {r.chosen.join(' • ')}</p>
+              <p className="italic">Correct sentence: {r.correctSentence}</p>
+            </div>
+          ))}
+          <button onClick={restartSigned}
+            className="mt-4 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-5 rounded-xl shadow w-full text-xl">
+            Play Again
           </button>
         </div>
       </div>
-    );
+    </DndProvider>
+  );
 
-  if(showSum)
-    return(
-      <DndProvider backend={HTML5Backend}>
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 p-4">
-          <div className="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-6xl w-full text-purple-800">
-            <h2 className="text-4xl font-bold mb-6 text-center">Session Summary</h2>
-            {results.map(r=>(
-              <div key={r.round} className="mb-6">
-                <h3 className="font-semibold">Round {r.round} — {r.correct?'✅ Correct':'❌ Wrong'}</h3>
-                <p>Your answer: {r.chosen.join(' • ')}</p>
-                <p className="italic">Correct sentence: {r.correctSentence}</p>
-              </div>
-            ))}
-            <button onClick={restartSigned}
-              className="mt-4 bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-5 rounded-xl shadow w-full text-xl">
-              Play Again
-            </button>
-          </div>
-        </div>
-      </DndProvider>
-    );
+  /* ---------- loading guard ---------- */
+  if(!entry) return (
+    <DndProvider backend={HTML5Backend}>
+      <div className="min-h-screen flex items-center justify-center text-xl">Loading…</div>
+    </DndProvider>
+  );
 
-  if(!entry)
-    return(
-      <DndProvider backend={HTML5Backend}>
-        <div className="min-h-screen flex items-center justify-center text-xl">Loading…</div>
-      </DndProvider>
-    );
+  /* ----- active round UI ----- */
+  const parts = entry.sentenceTemplate.split('___');
+  const usedIds = filled.filter(Boolean).map(w=>w!.id);
+  const avail = pool.filter(w=>!usedIds.includes(w.id));
 
-  /* ---- game UI ---- */
-  const parts=entry.sentence.split('___');
-  const usedIds=filled.filter(Boolean).map(w=>w!.id);
-  const avail=pool.filter(w=>!usedIds.includes(w.id));
-
-  return(
+  return (
     <DndProvider backend={HTML5Backend}>
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200">
         <div className="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-6xl w-full text-purple-800">
@@ -179,18 +199,21 @@ export default function SentenceGamePage() {
             Round {round} / {isGuest?GUEST_ROUNDS:USER_ROUNDS}
           </h2>
 
+          {/* sentence with blanks */}
           <p dir="rtl" className="text-2xl mb-8 text-center">
             {parts.map((part,i)=>(
               <span key={i}>
                 {part}
-                {i<3&&<Blank index={i} word={filled[i]} onDrop={dropBlank}/>}
+                {i<3 && <Blank index={i} word={filled[i]} onDrop={dropBlank}/>}
               </span>
             ))}
           </p>
 
+          {/* word pool */}
           <WordPool words={avail} onDropBack={returnToPool}/>
 
-          {!submitted?(
+          {/* buttons */}
+          {!submitted ? (
             <>
               <button onClick={submit}
                 className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-3 px-6 rounded-xl shadow text-lg">
@@ -201,10 +224,10 @@ export default function SentenceGamePage() {
                 Reset Sentence
               </button>
             </>
-          ):(
+          ) : (
             <div className="text-center">
               <p className="text-2xl font-semibold mb-3">{feedback}</p>
-              {showCorrect&&<p className="italic text-lg mb-3">Correct sentence: {build(entry)}</p>}
+              {showCorrect && <p className="italic text-lg mb-3">Correct sentence: {buildSentence(entry)}</p>}
               <button onClick={next}
                 className="bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-xl shadow text-lg">
                 {round<(isGuest?GUEST_ROUNDS:USER_ROUNDS)?'Next Round':'Finish'}
@@ -217,7 +240,8 @@ export default function SentenceGamePage() {
   );
 }
 
-/* ── child components ── */
+/* ── DnD child components (unchanged) ── */
+
 function DraggableWord({word,id}:WordItem){
   const[{isDragging},drag]=useDrag(()=>({
     type:ItemType.WORD,item:{id,word},collect:m=>({isDragging:!!m.isDragging()})
