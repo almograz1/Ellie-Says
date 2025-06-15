@@ -11,7 +11,7 @@ export default function Navbar() {
   const { user, logout, loading } = useAuth()
   const { theme, toggleTheme } = useTheme()
 
-  if (!pathname || pathname === '') return null
+  if (!pathname || pathname === '/') return null
   if (loading) return null
 
   const isLoggedIn = !!user

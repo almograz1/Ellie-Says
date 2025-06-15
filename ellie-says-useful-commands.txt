@@ -65,5 +65,8 @@ cd my-app
 #(react-dnd) and its HTML5 backend, which lets you add drag-and-drop functionality to your React app 
 #using the browser's built-in drag events.
 
-#npm install @google/generative-ai
-#@google/generative-ai is the official Node.js SDK that lets your app connect to Google's Gemini AI models — you need to install it so your code (like getGeminiModel()) can generate words, sentences, and content using the Gemini API.
+npm install next react react-dom
+npm install next-themes
+
+(might not need to install only if problems):
+npm install tailwindcss
