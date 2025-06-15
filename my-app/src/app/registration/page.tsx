@@ -1,4 +1,3 @@
-// src/app/registration/page.tsx
 'use client'
 
 import { useState } from 'react'
@@ -10,6 +9,7 @@ import {
 } from 'firebase/auth'
 import { auth } from '@/firebase'
 import { registerUser, UserProfile } from '@/firebaseService'
+import { useTheme } from '@/lib/ThemeContext'  // Import theme hook
 
 export default function RegistrationPage() {
     const [displayName, setDisplayName] = useState('')
@@ -17,17 +17,14 @@ export default function RegistrationPage() {
     const [password, setPassword]       = useState('')
     const [error, setError]             = useState<string | null>(null)
     const [pending, setPending]         = useState(false)
+    const { theme } = useTheme()
 
     const handleRegister = async () => {
         setError(null)
         try {
-            // 1. Create the user in Firebase Auth
             const { user } = await createUserWithEmailAndPassword(auth, email, password)
-
-            // 2. Send them a verification email
             await sendEmailVerification(user)
 
-            // 3. Save user profile in Firestore (with a `verified` flag)
             const profile: UserProfile = {
                 userId:      user.uid,
                 displayName,
@@ -36,11 +33,7 @@ export default function RegistrationPage() {
                 verified:    false
             }
             await registerUser(profile)
-
-            // 4. Sign them out until they verify
             await signOut(auth)
-
-            // 5. Show the "verification pending" UI
             setPending(true)
         } catch (err: unknown) {
             if(err instanceof Error){
@@ -52,13 +45,23 @@ export default function RegistrationPage() {
         }
     }
 
-    // If we're waiting for the user to verify their email
     if (pending) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 p-4">
-                <div className="bg-white/90 backdrop-blur-md rounded-2xl p-8 max-w-md text-center">
-                    <h2 className="text-2xl font-bold mb-4">Almost there!</h2>
-                    <p className="mb-4">
+            <div className={
+              `min-h-screen flex items-center justify-center p-4
+               ${theme === 'light'
+                 ? 'bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200'
+                 : 'bg-gradient-to-br from-gray-900 via-purple-900 to-black'}`
+            }>
+                <div className={`
+                    max-w-md rounded-2xl p-8 text-center
+                    backdrop-blur-md
+                    ${theme === 'light' ? 'bg-white/90' : 'bg-gray-800/90'}
+                `}>
+                    <h2 className={theme === 'light' ? 'text-2xl font-bold mb-4 text-gray-900' : 'text-2xl font-bold mb-4 text-gray-100'}>
+                        Almost there!
+                    </h2>
+                    <p className={theme === 'light' ? 'mb-4 text-gray-900' : 'mb-4 text-gray-200'}>
                         We’ve sent a verification link to <strong>{email}</strong>.<br/>
                         Please check your inbox (and spam folder), then{' '}
                         <Link href="/signin" className="text-purple-600 hover:underline">
@@ -70,43 +73,75 @@ export default function RegistrationPage() {
         )
     }
 
-    // Registration form UI
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 p-4">
-            <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-8 max-w-md w-full space-y-6">
+        <div className={
+          `min-h-screen flex items-center justify-center p-4
+           ${theme === 'light'
+             ? 'bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200'
+             : 'bg-gradient-to-br from-gray-900 via-purple-900 to-black'}`
+        }>
+            <div className={
+              `max-w-md w-full rounded-2xl shadow-2xl p-8 space-y-6
+               backdrop-blur-md
+               ${theme === 'light' ? 'bg-white/90' : 'bg-gray-800/90'}`
+            }>
                 <div className="text-center">
-                    <h1 className="text-3xl font-extrabold text-purple-800">🚀 Join Ellie Says!</h1>
-                    <p className="mt-2 text-purple-600">Create a fun learning account</p>
+                    <h1 className={theme === 'light' ? 'text-3xl font-extrabold text-purple-800' : 'text-3xl font-extrabold text-purple-300'}>
+                        🚀 Join Ellie Says!
+                    </h1>
+                    <p className={theme === 'light' ? 'mt-2 text-purple-600' : 'mt-2 text-purple-400'}>
+                        Create a fun learning account
+                    </p>
                 </div>
                 <input
                     type="text"
                     placeholder="Display Name"
                     value={displayName}
                     onChange={e => setDisplayName(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg border-2 border-purple-300 focus:border-purple-500 outline-none transition text-black placeholder-purple-200 placeholder-opacity-100"
+                    className={
+                      `w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition
+                       ${theme === 'light'
+                         ? 'border-purple-300 focus:border-purple-500 placeholder-purple-200 text-black placeholder-opacity-100'
+                         : 'border-purple-700 focus:border-purple-400 placeholder-purple-400 text-white placeholder-opacity-70'}`
+                    }
                 />
                 <input
                     type="email"
                     placeholder="Email Address"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg border-2 border-purple-300 focus:border-purple-500 outline-none transition text-black placeholder-purple-200 placeholder-opacity-100"
+                    className={
+                      `w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition
+                       ${theme === 'light'
+                         ? 'border-purple-300 focus:border-purple-500 placeholder-purple-200 text-black placeholder-opacity-100'
+                         : 'border-purple-700 focus:border-purple-400 placeholder-purple-400 text-white placeholder-opacity-70'}`
+                    }
                 />
                 <input
                     type="password"
                     placeholder="Password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 rounded-lg border-2 border-purple-300 focus:border-purple-500 outline-none transition text-black placeholder-purple-200 placeholder-opacity-100"
+                    className={
+                      `w-full px-4 py-3 rounded-lg border-2 focus:outline-none transition
+                       ${theme === 'light'
+                         ? 'border-purple-300 focus:border-purple-500 placeholder-purple-200 text-black placeholder-opacity-100'
+                         : 'border-purple-700 focus:border-purple-400 placeholder-purple-400 text-white placeholder-opacity-70'}`
+                    }
                 />
                 {error && <p className="text-red-600 text-center">{error}</p>}
                 <button
                     onClick={handleRegister}
-                    className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg shadow-md transition"
+                    className={
+                      `w-full py-3 font-bold rounded-lg shadow-md transition
+                       ${theme === 'light'
+                         ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                         : 'bg-purple-700 hover:bg-purple-600 text-gray-100'}`
+                    }
                 >
                     Register
                 </button>
-                <div className="flex justify-between text-sm text-purple-700">
+                <div className={theme === 'light' ? "flex justify-between text-sm text-purple-700" : "flex justify-between text-sm text-purple-300"}>
                     <Link href="/signin" className="hover:underline">
                         Already have an account?
                     </Link>
