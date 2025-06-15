@@ -64,3 +64,6 @@ cd my-app
 # - The command npm install react-dnd react-dnd-html5-backend installs the React Drag and Drop library 
 #(react-dnd) and its HTML5 backend, which lets you add drag-and-drop functionality to your React app 
 #using the browser's built-in drag events.
+
+#npm install @google/generative-ai
+#@google/generative-ai is the official Node.js SDK that lets your app connect to Google's Gemini AI models — you need to install it so your code (like getGeminiModel()) can generate words, sentences, and content using the Gemini API.
