@@ -8,9 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
-  },
-  "dependencies": {
-    "@google/generative-ai": "^0.24.1",
+  },  "dependencies": {
+    "@google/generative-ai": "^1.2.0",
     "firebase": "^11.8.1",
     "framer-motion": "^12.12.2",
     "lucide-react": "^0.511.0",
@@ -23,8 +22,8 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
-    "@types/node": "20.19.0",
-    "@types/react": "19.1.8",
+    "@types/node": "^20",
+    "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",

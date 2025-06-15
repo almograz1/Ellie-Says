@@ -94,14 +94,14 @@
     "hebrewWord": "עֲגבנְיָה",
     "options": ["tomato", "banana", "onion", "garlic"],
     "correctIndex": 0,
-    "clueSentence": "אֲנִי חוֹתֵךְ עֲגוּנְיָה לַסָּלָט.",
+    "clueSentence": "אֲנִי חוֹתֵךְ עֲגבנְיָה לַסָּלָט.",
     "clueEmoji": "🍅"
   },
   {
     "hebrewWord": "בָּשר",
     "options": ["meat", "milk", "bread", "water"],
     "correctIndex": 0,
-    "clueSentence": "הֵם אוֹהֲבִים בָּסָר עָסִיסִי.",
+    "clueSentence": "הֵם אוֹהֲבִים בָּשר עָסִיסִי.",
     "clueEmoji": "🥩"
   },
   {

@@ -1,8 +1,10 @@
-import { NextResponse } from 'next/server';
-import { model, safeJson } from '@/lib/genai';
+// src/app/api/trivia-round/route.ts
+import { NextResponse } from "next/server";
+import { getGeminiModel } from "@/lib/gemini";   // ✅ centralised helper
+import { safeJson } from "@/lib/utils";          // adjust path if needed
 
 // ---- optional fallback --------------------------------
-import fallback from '@/data/triviaFallback.json';   // adjust path / filename
+import fallback from "@/data/triviaFallback.json";
 function getFallback() {
   const rnd = fallback[Math.floor(Math.random() * fallback.length)];
   return rnd;
@@ -10,21 +12,33 @@ function getFallback() {
 // -------------------------------------------------------
 
 export async function GET() {
-  const prompt = `
-Return ONLY valid JSON with this shape:
+  const topics = ["animals", "food", "school", "emotions", "colors", "family", "weather"];
+const randomTopic = topics[Math.floor(Math.random() * topics.length)];
+
+const prompt = `
+Return ONLY raw JSON — no markdown, no text, no triple back-ticks — with this exact shape:
 {
- "hebrewWord": "...",          // Hebrew noun with nikud
- "options": ["...", "...", "...", "..."], // 4 English words
- "correctIndex": 0,            // 0-3
- "clueSentence": "...",        // Hebrew sentence using the word
- "clueEmoji": "😃"
+  "hebrewWord": "...",                         // Hebrew noun with nikud
+  "options": ["...", "...", "...", "..."],     // 4 English words
+  "correctIndex": 0,                           // 0-3 (index of correct option)
+  "clueSentence": "...",                       // Hebrew sentence using the word
+  "clueEmoji": "😃"
 }
-The options array must include exactly one correct translation for the hebrewWord (at index 'correctIndex') and three unrelated distractors.
-All Hebrew text must include nikud.
-`;
+
+Give a different Hebrew word each time related to this topic: "${randomTopic}".
+Include a sentence that makes sense and an emoji that fits.
+Do NOT reuse words from earlier.
+Prompt freshness: ${Date.now()}
+`.trim();
+
+
+  const model = getGeminiModel();
 
   try {
-    const { text } = await model.generateContent(prompt);
+    // -- new SDK → GenerateContentResponse
+    const result = await model.generateContent(prompt);
+    const text   = result.response.text();
+
     const data = safeJson<{
       hebrewWord: string;
       options: string[];
@@ -33,6 +47,7 @@ All Hebrew text must include nikud.
       clueEmoji: string;
     }>(text);
 
+    // quick sanity checks
     if (
       !data ||
       !Array.isArray(data.options) ||
@@ -40,11 +55,12 @@ All Hebrew text must include nikud.
       data.correctIndex < 0 ||
       data.correctIndex > 3
     ) {
-      throw new Error('Bad JSON');
+      throw new Error("Bad JSON");
     }
-    return NextResponse.json(data);
+
+    return NextResponse.json(data);      // success 🎉
   } catch (err) {
-    console.warn('Gemini failed, using fallback:', err);
-    return NextResponse.json(getFallback());
+    console.warn("Gemini failed, using fallback:", err);
+    return NextResponse.json(getFallback()); // graceful degrade
   }
 }
