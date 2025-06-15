@@ -8,9 +8,9 @@ import { useAuth } from '@/lib/useAuth'
 
 export default function Navbar() {
     const pathname = usePathname()
-    if (pathname === '/') return null
-
     const { user, logout, loading } = useAuth()
+
+    if (pathname === '/') return null
     if (loading) return null
 
     const isLoggedIn = !!user
