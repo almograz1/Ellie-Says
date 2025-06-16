@@ -6,6 +6,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { app } from '../../../firebase';
+import { useTheme } from '@/lib/ThemeContext';
 
 /* ── constants ── */
 const GUEST_ROUNDS = 3;
@@ -24,6 +25,7 @@ interface RoundResult { round: number; chosen: string[]; correct: boolean; corre
 /* ── main component ── */
 export default function SentenceGamePage() {
   const router = useRouter();
+  const { theme } = useTheme();
 
   /* auth */
   const [hydrated,setHydrated] = useState(false);
@@ -141,12 +143,31 @@ export default function SentenceGamePage() {
   };
 
   /* ── render guards ── */
-  if(!hydrated||isGuest===null) return <div className="min-h-screen flex items-center justify-center text-xl">Loading…</div>;
+  if(!hydrated||isGuest===null) return (
+    <div className={`
+      min-h-screen flex items-center justify-center text-xl
+      ${theme === 'light'
+        ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200 text-purple-800'
+        : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900 text-purple-200'}
+    `}>
+      Loading…
+    </div>
+  );
 
   /* ---------- guest prompt ---------- */
   if(prompt) return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 p-6">
-      <div className="bg-white/90 backdrop-blur-md p-10 rounded-2xl shadow-2xl max-w-xl w-full text-center text-purple-800">
+    <div className={`
+      min-h-screen flex items-center justify-center p-6
+      ${theme === 'light'
+        ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200'
+        : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}
+    `}>
+      <div className={`
+        backdrop-blur-md p-10 rounded-2xl shadow-2xl max-w-xl w-full text-center
+        ${theme === 'light'
+          ? 'bg-white/90 text-purple-800'
+          : 'bg-gray-800/90 text-purple-200'}
+      `}>
         <h2 className="text-3xl font-bold mb-6">🎮 Want More Games?</h2>
         <p className="text-xl mb-6">Sign up to play unlimited rounds and all game modes!</p>
         <button onClick={()=>router.push('/signin')}
@@ -160,8 +181,18 @@ export default function SentenceGamePage() {
   /* ---------- signed-in summary ---------- */
   if(showSum) return (
     <DndProvider backend={HTML5Backend}>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 p-4">
-        <div className="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-6xl w-full text-purple-800">
+      <div className={`
+        min-h-screen flex items-center justify-center p-4
+        ${theme === 'light'
+          ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200'
+          : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}
+      `}>
+        <div className={`
+          backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-6xl w-full
+          ${theme === 'light'
+            ? 'bg-white/90 text-purple-800'
+            : 'bg-gray-800/90 text-purple-200'}
+        `}>
           <h2 className="text-4xl font-bold mb-6 text-center">Session Summary</h2>
           {results.map(r=>(
             <div key={r.round} className="mb-6">
@@ -182,7 +213,14 @@ export default function SentenceGamePage() {
   /* ---------- loading guard ---------- */
   if(!entry) return (
     <DndProvider backend={HTML5Backend}>
-      <div className="min-h-screen flex items-center justify-center text-xl">Loading…</div>
+      <div className={`
+        min-h-screen flex items-center justify-center text-xl
+        ${theme === 'light'
+          ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200 text-purple-800'
+          : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900 text-purple-200'}
+      `}>
+        Loading…
+      </div>
     </DndProvider>
   );
 
@@ -193,8 +231,18 @@ export default function SentenceGamePage() {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200">
-        <div className="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-6xl w-full text-purple-800">
+      <div className={`
+        min-h-screen flex items-center justify-center
+        ${theme === 'light'
+          ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200'
+          : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}
+      `}>
+        <div className={`
+          backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-6xl w-full
+          ${theme === 'light'
+            ? 'bg-white/90 text-purple-800'
+            : 'bg-gray-800/90 text-purple-200'}
+        `}>
           <h2 className="text-3xl font-bold mb-6 text-center">
             Round {round} / {isGuest?GUEST_ROUNDS:USER_ROUNDS}
           </h2>
@@ -204,13 +252,13 @@ export default function SentenceGamePage() {
             {parts.map((part,i)=>(
               <span key={i}>
                 {part}
-                {i<3 && <Blank index={i} word={filled[i]} onDrop={dropBlank}/>}
+                {i<3 && <Blank index={i} word={filled[i]} onDrop={dropBlank} theme={theme}/>}
               </span>
             ))}
           </p>
 
           {/* word pool */}
-          <WordPool words={avail} onDropBack={returnToPool}/>
+          <WordPool words={avail} onDropBack={returnToPool} theme={theme}/>
 
           {/* buttons */}
           {!submitted ? (
@@ -240,20 +288,26 @@ export default function SentenceGamePage() {
   );
 }
 
-/* ── DnD child components (unchanged) ── */
+/* ── DnD child components with theme support ── */
 
-function DraggableWord({word,id}:WordItem){
+function DraggableWord({word,id,theme}:WordItem & {theme:string}){
   const[{isDragging},drag]=useDrag(()=>({
     type:ItemType.WORD,item:{id,word},collect:m=>({isDragging:!!m.isDragging()})
   }));
   return(
     <div ref={drag}
-      className={`w-36 h-14 flex items-center justify-center rounded-xl shadow bg-white border border-purple-300 text-xl font-medium cursor-move transition-opacity ${isDragging?'opacity-30':'opacity-100'}`}>
+      className={`
+        w-36 h-14 flex items-center justify-center rounded-xl shadow border text-xl font-medium cursor-move transition-opacity
+        ${isDragging?'opacity-30':'opacity-100'}
+        ${theme === 'light'
+          ? 'bg-white border-purple-300 text-purple-800'
+          : 'bg-gray-700 border-purple-500 text-purple-200'}
+      `}>
       {word}
     </div>);
 }
 
-function Blank({index,word,onDrop}:{index:number;word:WordItem|null;onDrop:(i:number,it:WordItem)=>void;}){
+function Blank({index,word,onDrop,theme}:{index:number;word:WordItem|null;onDrop:(i:number,it:WordItem)=>void;theme:string}){
   const[{isOver},drop]=useDrop(()=>({
     accept:ItemType.WORD,drop:(it:WordItem)=>onDrop(index,it),
     collect:m=>({isOver:!!m.isOver()})
@@ -264,8 +318,13 @@ function Blank({index,word,onDrop}:{index:number;word:WordItem|null;onDrop:(i:nu
   }));
   return(
     <span ref={drop}
-      className={`inline-block w-32 h-10 mx-2 rounded-md border-b-2 border-purple-400 text-center ${
-        isOver?'bg-purple-100':'bg-white'}`}>
+      className={`
+        inline-block w-32 h-10 mx-2 rounded-md border-b-2 text-center
+        ${isOver
+          ? theme === 'light' ? 'bg-purple-100' : 'bg-purple-800'
+          : theme === 'light' ? 'bg-white' : 'bg-gray-700'}
+        ${theme === 'light' ? 'border-purple-400' : 'border-purple-500'}
+      `}>
       {word?(
         <span ref={drag} className={`inline-block cursor-move ${isDragging?'opacity-30':''}`}>
           {word.word}
@@ -274,10 +333,10 @@ function Blank({index,word,onDrop}:{index:number;word:WordItem|null;onDrop:(i:nu
     </span>);
 }
 
-function WordPool({words,onDropBack}:{words:WordItem[];onDropBack:(it:WordItem)=>void;}){
+function WordPool({words,onDropBack,theme}:{words:WordItem[];onDropBack:(it:WordItem)=>void;theme:string}){
   const [,drop]=useDrop(()=>({accept:ItemType.WORD,drop:onDropBack}),[onDropBack]);
   return(
     <div ref={drop} className="flex flex-wrap justify-center gap-4 mb-8 min-h-16">
-      {words.map(({id,word})=><DraggableWord key={id} id={id} word={word}/>)}
+      {words.map(({id,word})=><DraggableWord key={id} id={id} word={word} theme={theme}/>)}
     </div>);
 }

@@ -1,5 +1,4 @@
 'use client'
-
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
@@ -18,50 +17,92 @@ export default function Navbar() {
   const hoverAnim = 'transform transition duration-200 ease-out hover:scale-110 hover:animate-pulse hover:opacity-80'
 
   return (
-    <header className="fixed top-0 left-0 w-full bg-purple-700 z-50">
+    <header className={`fixed top-0 left-0 w-full z-50 ${
+      theme === 'light' 
+        ? 'bg-purple-700' 
+        : 'bg-gray-900 border-b border-purple-500/30'
+    }`}>
       <div className="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
+        {/* Logo */}
         <Link href="/" className={`flex items-center space-x-2 ${hoverAnim}`}>
-          <Image src="/Ellie_icon.png" alt="Ellie Says Avatar" width={40} height={40} className="rounded-full" priority />
+          <Image 
+            src="/Ellie_icon.png" 
+            alt="Ellie Says Avatar" 
+            width={40} 
+            height={40} 
+            className="rounded-full" 
+            priority 
+          />
           <span className="text-white text-2xl font-extrabold">Ellie Says</span>
         </Link>
 
+        {/* Navigation Links */}
         <nav className="hidden md:flex space-x-6">
           {isLoggedIn && (
-            <Link href="/profile" className={`text-white font-bold hover:text-yellow-200 ${hoverAnim}`}>
+            <Link 
+              href="/profile" 
+              className={`text-white font-bold hover:text-yellow-200 ${hoverAnim}`}
+            >
               My Profile
             </Link>
           )}
-          <Link href="/games" className={`text-white font-bold hover:text-yellow-200 ${hoverAnim}`}>
+          <Link 
+            href="/games" 
+            className={`text-white font-bold hover:text-yellow-200 ${hoverAnim}`}
+          >
             Games
           </Link>
-          <Link href="/translate" className={`text-white font-bold hover:text-yellow-200 ${hoverAnim}`}>
+          <Link 
+            href="/translate" 
+            className={`text-white font-bold hover:text-yellow-200 ${hoverAnim}`}
+          >
             Translate
           </Link>
-          <Link href="/contact" className={`text-white font-bold hover:text-yellow-200 ${hoverAnim}`}>
+          <Link 
+            href="/contact" 
+            className={`text-white font-bold hover:text-yellow-200 ${hoverAnim}`}
+          >
             Contact Us
           </Link>
         </nav>
 
-        {isLoggedIn ? (
-          <button onClick={logout} className={`bg-white text-purple-600 font-bold py-2 px-4 rounded-full cursor-pointer ${hoverAnim}`}>
-            Log Out
+        {/* Right Side Actions */}
+        <div className="flex items-center space-x-3">
+          {/* Theme Toggle Button */}
+          <button
+            onClick={() => {
+              console.log('[Navbar] Toggle button clicked')
+              toggleTheme()
+            }}
+            className={`p-2 rounded-full transition-all duration-200 hover:scale-110 ${
+              theme === 'light'
+                ? 'bg-yellow-400 hover:bg-yellow-300 text-gray-800'
+                : 'bg-gray-700 hover:bg-gray-600 text-yellow-300'
+            }`}
+            aria-label="Toggle light/dark mode"
+          >
+            <span className="text-xl">
+              {theme === 'light' ? '🌙' : '☀️'}
+            </span>
           </button>
-        ) : (
-          <Link href="/signin" className={`bg-white text-purple-600 font-bold py-2 px-4 rounded-full cursor-pointer ${hoverAnim}`}>
-            Sign In / Sign Up
-          </Link>
-        )}
 
-        <button
-          onClick={() => {
-            console.log('[Navbar] Toggle button clicked')
-            toggleTheme()
-          }}
-          className="ml-4 bg-white text-purple-600 font-bold py-2 px-4 rounded-full cursor-pointer"
-          aria-label="Toggle light/dark mode"
-        >
-          {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-        </button>
+          {/* Auth Button */}
+          {isLoggedIn ? (
+            <button 
+              onClick={logout} 
+              className={`bg-white text-purple-600 font-bold py-2 px-4 rounded-full transition-all duration-200 hover:bg-gray-100 hover:scale-105 hover:shadow-lg`}
+            >
+              Log Out
+            </button>
+          ) : (
+            <Link 
+              href="/signin" 
+              className={`bg-white text-purple-600 font-bold py-2 px-4 rounded-full transition-all duration-200 hover:bg-gray-100 hover:scale-105 hover:shadow-lg`}
+            >
+              Sign In / Sign Up
+            </Link>
+          )}
+        </div>
       </div>
     </header>
   )

@@ -9,6 +9,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { app } from '../../../firebase';
+import { useTheme } from '@/lib/ThemeContext';
 
 interface WordEntry {
   english: string;
@@ -34,6 +35,7 @@ export default function WordMatchPage() {
   const [isGuest, setIsGuest] = useState(false);
   const [errorPair, setErrorPair] = useState<[string, string] | null>(null);
 
+  const { theme } = useTheme();
   const db = getFirestore(app);
 
   /** fetch 4 fresh word pairs from /api/word-match-round */
@@ -117,12 +119,20 @@ export default function WordMatchPage() {
 
   /* ---------- UI ---------- */
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 p-10 text-purple-800 text-2xl">
+    <div className={`min-h-screen flex flex-col items-center justify-center p-10 text-2xl
+      ${theme === 'light'
+        ? 'bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 text-purple-800'
+        : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900 text-purple-200'}`}
+    >
       <div className="max-w-5xl w-full">
         {gameOver ? (
           isGuest ? (
             /* ---------- guest modal ---------- */
-            <div className="text-center bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-10">
+            <div className={`text-center backdrop-blur-md rounded-2xl shadow-2xl p-10
+              ${theme === 'light'
+                ? 'bg-white/90 text-purple-800'
+                : 'bg-gray-800/90 text-purple-200'}`}
+            >
               <h2 className="text-3xl font-bold mb-6">🎮 Want More Games?</h2>
               <p className="text-xl mb-6">
                 If you enjoyed this game, sign up for full access to more rounds and all game modes!
@@ -136,7 +146,11 @@ export default function WordMatchPage() {
             </div>
           ) : (
             /* ---------- victory modal ---------- */
-            <div className="text-center bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-10">
+            <div className={`text-center backdrop-blur-md rounded-2xl shadow-2xl p-10
+              ${theme === 'light'
+                ? 'bg-white/90 text-purple-800'
+                : 'bg-gray-800/90 text-purple-200'}`}
+            >
               <h2 className="text-3xl font-bold mb-6">🎉 You did it!</h2>
               <p className="text-xl mb-4">You matched all the pairs correctly!</p>
               <ul className="text-left text-lg mb-6">
@@ -148,7 +162,10 @@ export default function WordMatchPage() {
               </ul>
               <button
                 onClick={initializeGame}
-                className="bg-yellow-400 hover:bg-yellow-500 text-purple-900 px-6 py-3 rounded shadow text-lg"
+                className={`px-6 py-3 rounded shadow text-lg
+                  ${theme === 'light'
+                    ? 'bg-yellow-400 hover:bg-yellow-500 text-purple-900'
+                    : 'bg-yellow-500 hover:bg-yellow-600 text-gray-900'}`}
               >
                 Play Again
               </button>
@@ -156,8 +173,16 @@ export default function WordMatchPage() {
           )
         ) : (
           /* ---------- active round ---------- */
-          <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-10">
-            <h2 className="text-4xl font-bold mb-10 text-center">Match the words!</h2>
+          <div className={`backdrop-blur-md rounded-2xl shadow-2xl p-10
+            ${theme === 'light'
+              ? 'bg-white/90'
+              : 'bg-gray-800/90'}`}
+          >
+            <h2 className={`text-4xl font-bold mb-10 text-center
+              ${theme === 'light' ? 'text-purple-800' : 'text-purple-200'}`}
+            >
+              Match the words!
+            </h2>
             <div className="grid grid-cols-2 gap-16">
               {/* English buttons */}
               <div className="flex flex-col items-end gap-6">
@@ -175,7 +200,9 @@ export default function WordMatchPage() {
                           ? 'bg-red-400 text-white'
                           : selected
                           ? 'bg-purple-600 text-white'
-                          : 'bg-white hover:bg-purple-100'}`}
+                          : theme === 'light'
+                          ? 'bg-white hover:bg-purple-100 text-purple-800'
+                          : 'bg-gray-700 hover:bg-purple-800 text-purple-200'}`}
                       onClick={() => setSelectedEnglish(pair.english)}
                       disabled={matched}
                     >
@@ -201,7 +228,9 @@ export default function WordMatchPage() {
                           ? 'bg-red-400 text-white'
                           : selected
                           ? 'bg-yellow-500 text-white'
-                          : 'bg-white hover:bg-yellow-100'}`}
+                          : theme === 'light'
+                          ? 'bg-white hover:bg-yellow-100 text-purple-800'
+                          : 'bg-gray-700 hover:bg-yellow-800 text-purple-200'}`}
                       onClick={() => setSelectedHebrew(pair.hebrew)}
                       disabled={matched}
                     >
@@ -214,7 +243,11 @@ export default function WordMatchPage() {
 
             {/* live feedback for signed-in users */}
             {!isGuest && feedbackLog.length > 0 && (
-              <div className="mt-10 bg-white/80 p-6 rounded-xl shadow text-lg">
+              <div className={`mt-10 p-6 rounded-xl shadow text-lg
+                ${theme === 'light'
+                  ? 'bg-white/80 text-purple-800'
+                  : 'bg-gray-700/80 text-purple-200'}`}
+              >
                 <h3 className="text-2xl font-semibold mb-4">Your Answers</h3>
                 <ul className="list-disc pl-6">
                   {feedbackLog.map((e, i) => (

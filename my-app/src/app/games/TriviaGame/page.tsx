@@ -9,6 +9,7 @@ import {
   serverTimestamp
 } from 'firebase/firestore';
 import { app } from '../../../firebase';
+import { useTheme } from '@/lib/ThemeContext';
 
 /* ---------- server-payload types ---------- */
 interface TriviaRound {
@@ -31,6 +32,8 @@ const ROUNDS_FOR_SIGNED   = 5;
 const ROUNDS_FOR_GUEST    = 3;
 
 export default function TriviaGamePage() {
+  const { theme } = useTheme();
+  
   /* ---------- state ---------- */
   const [questions, setQuestions] = useState<TriviaRound[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -127,31 +130,63 @@ export default function TriviaGamePage() {
   const restart = () => loadRounds();
 
   /* ---------- loading ---------- */
-  if (isLoading) return <div>Loading game...</div>;
+  if (isLoading) return (
+    <div className={`
+      min-h-screen flex items-center justify-center text-xl
+      ${theme === 'light'
+        ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200 text-purple-800'
+        : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900 text-purple-200'}
+    `}>
+      Loading game…
+    </div>
+  );
 
   const q = questions[currentIndex];
 
   /* ---------- UI ---------- */
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 p-10 text-purple-800 text-xl">
+    <div className={`
+      min-h-screen flex flex-col items-center justify-center p-10 text-xl
+      ${theme === 'light'
+        ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200 text-purple-800'
+        : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900 text-purple-200'}
+    `}>
       {!showSummary ? (
-        <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center">
+        <div className={`
+          backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center
+          ${theme === 'light'
+            ? 'bg-white/90 text-purple-800'
+            : 'bg-gray-800/90 text-purple-200'}
+        `}>
           <p className="text-lg mb-2">Round {currentIndex + 1} / {questions.length}</p>
           <h1 className="text-4xl font-bold mb-2">What does this word mean?</h1>
-          <h2 className="text-6xl font-extrabold text-purple-700 mb-6" dir="rtl">
+          <h2 className={`
+            text-6xl font-extrabold mb-6
+            ${theme === 'light' ? 'text-purple-700' : 'text-purple-300'}
+          `} dir="rtl">
             {q.hebrewWord}
           </h2>
 
           <div className="flex justify-center gap-6 mb-6">
             <button
               onClick={() => setShowSentence(true)}
-              className="bg-purple-200 hover:bg-purple-300 px-6 py-2 rounded shadow text-lg"
+              className={`
+                px-6 py-2 rounded shadow text-lg
+                ${theme === 'light'
+                  ? 'bg-purple-200 hover:bg-purple-300 text-purple-800'
+                  : 'bg-purple-700 hover:bg-purple-600 text-purple-200'}
+              `}
             >
               Show Sentence 📘
             </button>
             <button
               onClick={() => setShowEmoji(true)}
-              className="bg-yellow-100 hover:bg-yellow-200 px-6 py-2 rounded shadow text-lg"
+              className={`
+                px-6 py-2 rounded shadow text-lg
+                ${theme === 'light'
+                  ? 'bg-yellow-100 hover:bg-yellow-200 text-purple-800'
+                  : 'bg-yellow-700 hover:bg-yellow-600 text-yellow-100'}
+              `}
             >
               Show Emoji 😃
             </button>
@@ -168,11 +203,15 @@ export default function TriviaGamePage() {
                 className={`w-full py-4 rounded-lg shadow-md text-2xl transition-all
                   ${selected
                     ? opt === q.options[q.correctIndex]
-                      ? 'bg-green-300'
+                      ? 'bg-green-300 text-green-800'
                       : opt === selected
-                        ? 'bg-red-300'
-                        : 'bg-white'
-                    : 'bg-white hover:bg-purple-100'}`}
+                        ? 'bg-red-300 text-red-800'
+                        : theme === 'light'
+                          ? 'bg-white text-purple-800'
+                          : 'bg-gray-700 text-purple-200'
+                    : theme === 'light'
+                      ? 'bg-white hover:bg-purple-100 text-purple-800'
+                      : 'bg-gray-700 hover:bg-purple-800 text-purple-200'}`}
               >
                 {opt}
               </button>
@@ -190,7 +229,12 @@ export default function TriviaGamePage() {
       ) : (
         /* ---------- summary modals ---------- */
         isGuest ? (
-          <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center">
+          <div className={`
+            backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center
+            ${theme === 'light'
+              ? 'bg-white/90 text-purple-800'
+              : 'bg-gray-800/90 text-purple-200'}
+          `}>
             <h2 className="text-3xl font-bold mb-6">🎮 Want More Games?</h2>
             <p className="text-xl mb-6">
               If you enjoyed this game, sign up for full access to more rounds and all game modes!
@@ -203,7 +247,12 @@ export default function TriviaGamePage() {
             </button>
           </div>
         ) : (
-          <div className="bg-white/90 backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center">
+          <div className={`
+            backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center
+            ${theme === 'light'
+              ? 'bg-white/90 text-purple-800'
+              : 'bg-gray-800/90 text-purple-200'}
+          `}>
             <h2 className="text-4xl font-bold mb-6">🎉 Game Over!</h2>
             <p className="text-2xl mb-6">Your Score: {score} / {questions.length}</p>
             <ul className="text-left text-lg mb-6">
@@ -215,7 +264,12 @@ export default function TriviaGamePage() {
             </ul>
             <button
               onClick={restart}
-              className="bg-purple-300 hover:bg-purple-400 text-white px-6 py-3 rounded shadow text-lg"
+              className={`
+                px-6 py-3 rounded shadow text-lg
+                ${theme === 'light'
+                  ? 'bg-purple-300 hover:bg-purple-400 text-white'
+                  : 'bg-purple-600 hover:bg-purple-500 text-white'}
+              `}
             >
               New Game
             </button>
