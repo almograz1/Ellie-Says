@@ -23,6 +23,7 @@ export default function TranslatePage() {
         '/ellie_talking0004.png',
         '/ellie_talking0005.png'
     ]
+    const [savingWord, setSavingWord] = useState<string | null>(null)
 
     useEffect(() => {
         if (!loading && !user && hasExceededGuestLimit()) {
@@ -90,17 +91,78 @@ export default function TranslatePage() {
         setInput('')
     }
 
+    const saveWord = async (english: string, hebrew: string) => {
+        if (!user) {
+            alert('Please sign in to save words! 💾')
+            return
+        }
+
+        const saveKey = `${english}-${hebrew}`
+        setSavingWord(saveKey)
+
+        try {
+            const response = await fetch('/api/save-word', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    english: english.trim(),
+                    hebrew: hebrew.trim(),
+                    userUid: user.uid
+                })
+            })
+
+            const result = await response.json()
+
+            if (response.ok) {
+                // Success notification
+                const notification = document.createElement('div')
+                notification.className = `fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg transform transition-all duration-300`
+                notification.innerHTML = '✅ Word saved successfully!'
+                document.body.appendChild(notification)
+
+                setTimeout(() => {
+                    notification.style.transform = 'translateX(100%)'
+                    setTimeout(() => document.body.removeChild(notification), 300)
+                }, 2000)
+            } else if (response.status === 409) {
+                // Already saved
+                const notification = document.createElement('div')
+                notification.className = `fixed top-4 right-4 z-50 bg-yellow-500 text-white px-6 py-3 rounded-full shadow-lg`
+                notification.innerHTML = '⚠️ Word already saved!'
+                document.body.appendChild(notification)
+
+                setTimeout(() => {
+                    document.body.removeChild(notification)
+                }, 2000)
+            } else {
+                throw new Error(result.error || 'Failed to save word')
+            }
+        } catch (error) {
+            console.error('Error saving word:', error)
+            alert('Failed to save word. Please try again.')
+        } finally {
+            setSavingWord(null)
+        }
+    }
+
+    // Helper function to extract English and Hebrew from messages
+    const extractTranslationPair = (userContent: string, assistantContent: string) => {
+        const english = userContent.trim()
+        const hebrew = assistantContent.trim()
+        return { english, hebrew }
+    }
+
     if (blocked) {
         return (
             <div className={`min-h-screen flex items-center justify-center p-4
                 ${theme === 'light'
-                    ? 'bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200'
-                    : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}`}
+                ? 'bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200'
+                : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}`}
             >
                 <div className={`backdrop-blur-md rounded-2xl shadow-2xl p-8 text-center
                     ${theme === 'light'
-                        ? 'bg-white/90'
-                        : 'bg-gray-800/90'}`}
+                    ? 'bg-white/90'
+                    : 'bg-gray-800/90'}`}
                 >
                     <div className="text-6xl mb-4">🚫</div>
                     <h2 className={`text-2xl font-bold mb-4
@@ -129,8 +191,8 @@ export default function TranslatePage() {
     return (
         <div className={`min-h-screen flex items-center justify-center p-6
             ${theme === 'light'
-                ? 'bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200'
-                : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}`}
+            ? 'bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200'
+            : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}`}
         >
             <div className="flex items-start justify-center gap-8 max-w-none w-full">
 
@@ -166,8 +228,8 @@ export default function TranslatePage() {
                             <div className={`absolute bottom-0 left-10 w-0 h-0 border-l-8 border-r-8
                                 border-t-8 border-l-transparent border-r-transparent transform translate-y-full
                                 ${theme === 'light'
-                                    ? 'border-t-white/95'
-                                    : 'border-t-gray-800/95'}`}
+                                ? 'border-t-white/95'
+                                : 'border-t-gray-800/95'}`}
                             ></div>
                         </div>
 
@@ -201,15 +263,15 @@ export default function TranslatePage() {
                     {/* Chat Box */}
                     <div className={`backdrop-blur-md rounded-3xl shadow-2xl border-2 overflow-hidden
                         ${theme === 'light'
-                            ? 'bg-white/90 border-purple-200'
-                            : 'bg-gray-800/90 border-purple-400'}`}
+                        ? 'bg-white/90 border-purple-200'
+                        : 'bg-gray-800/90 border-purple-400'}`}
                     >
 
                         {/* Chat Messages */}
                         <div className={`h-[500px] overflow-auto p-8 space-y-6
                             ${theme === 'light'
-                                ? 'bg-gradient-to-b from-purple-50/50 to-pink-50/50'
-                                : 'bg-gradient-to-b from-gray-700/50 to-gray-600/50'}`}
+                            ? 'bg-gradient-to-b from-purple-50/50 to-pink-50/50'
+                            : 'bg-gradient-to-b from-gray-700/50 to-gray-600/50'}`}
                         >
 
                             {history.length === 0 && (
@@ -223,27 +285,64 @@ export default function TranslatePage() {
                                 </div>
                             )}
 
-                            {history.map((m, i) => (
-                                <div
-                                    key={i}
-                                    className={`flex ${m.role === 'user' ? 'justify-start' : 'justify-end'}`}
-                                >
-                                    <div className={`max-w-md lg:max-w-lg p-5 rounded-2xl shadow-lg ${
-                                        m.role === 'user'
-                                            ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                                            : 'bg-gradient-to-l from-green-400 to-blue-400 text-white'
-                                    }`}>
-                                        <div className="text-sm font-bold mb-2 opacity-90">
-                                            {m.role === 'user' ? '👦 You (English)' : '🤖 Ellie (עברית)'}
-                                        </div>
-                                        <div className={`text-base leading-relaxed ${
-                                            m.role === 'user' ? 'text-left' : 'text-right'
-                                        }`} dir={m.role === 'user' ? 'ltr' : 'rtl'}>
-                                            {m.content}
+                            {history.map((m, i) => {
+                                const isUser = m.role === 'user'
+                                const isTranslationPair = !isUser && i > 0 && history[i-1].role === 'user'
+                                const userMessage = isTranslationPair ? history[i-1].content : ''
+                                const { english, hebrew } = isTranslationPair ?
+                                    extractTranslationPair(userMessage, m.content) :
+                                    { english: '', hebrew: '' }
+                                const saveKey = `${english}-${hebrew}`
+
+                                return (
+                                    <div
+                                        key={i}
+                                        className={`flex ${isUser ? 'justify-start' : 'justify-end'}`}
+                                    >
+                                        <div className={`max-w-md lg:max-w-lg p-5 rounded-2xl shadow-lg ${
+                                            isUser
+                                                ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
+                                                : 'bg-gradient-to-l from-green-400 to-blue-400 text-white'
+                                        }`}>
+                                            <div className="text-sm font-bold mb-2 opacity-90">
+                                                {isUser ? '👦 You (English)' : '🤖 Ellie (עברית)'}
+                                            </div>
+                                            <div className={`text-base leading-relaxed mb-3 ${
+                                                isUser ? 'text-left' : 'text-right'
+                                            }`} dir={isUser ? 'ltr' : 'rtl'}>
+                                                {m.content}
+                                            </div>
+
+                                            {/* Save Button for Hebrew translations */}
+                                            {!isUser && isTranslationPair && (
+                                                <div className="flex justify-center mt-3">
+                                                    <button
+                                                        onClick={() => saveWord(english, hebrew)}
+                                                        disabled={!user || savingWord === saveKey}
+                                                        className={`px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 ${
+                                                            savingWord === saveKey
+                                                                ? 'bg-gray-400 cursor-not-allowed'
+                                                                : 'bg-white/20 hover:bg-white/30 hover:scale-105 active:scale-95'
+                                                        }`}
+                                                        title={user ? 'Save this word to your collection' : 'Sign in to save words'}
+                                                    >
+                                                        {savingWord === saveKey ? (
+                                                            <>
+                                                                <span className="animate-spin inline-block mr-1">⏳</span>
+                                                                Saving...
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                💾 Save Word
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                )
+                            })}
 
                             {loadingAI && (
                                 <div className="flex justify-end">
@@ -266,8 +365,8 @@ export default function TranslatePage() {
                         {/* Input Form */}
                         <div className={`p-8 backdrop-blur-sm border-t-2
                             ${theme === 'light'
-                                ? 'bg-white/80 border-purple-200'
-                                : 'bg-gray-700/80 border-purple-400'}`}
+                            ? 'bg-white/80 border-purple-200'
+                            : 'bg-gray-700/80 border-purple-400'}`}
                         >
                             <form onSubmit={handleSubmit} className="flex space-x-4">
                                 <input
@@ -279,8 +378,8 @@ export default function TranslatePage() {
                                         focus:border-purple-500 outline-none transition-all duration-200
                                         text-base font-medium backdrop-blur-sm
                                         ${theme === 'light'
-                                            ? 'border-purple-300 text-purple-800 placeholder-purple-400 bg-white/90'
-                                            : 'border-purple-400 text-purple-200 placeholder-purple-300 bg-gray-800/90'}`}
+                                        ? 'border-purple-300 text-purple-800 placeholder-purple-400 bg-white/90'
+                                        : 'border-purple-400 text-purple-200 placeholder-purple-300 bg-gray-800/90'}`}
                                     disabled={loadingAI}
                                 />
                                 <button
@@ -303,11 +402,15 @@ export default function TranslatePage() {
                                 {!user && (
                                     <p>
                                         🎯 Free translations left: {Math.max(0, 3 - (parseInt(localStorage.getItem('guestPlayCount') || '0')))}
+                                        <span className="mx-2">•</span>
+                                        <span className="text-yellow-600 font-bold">💾 Sign in to save words!</span>
                                     </p>
                                 )}
-                                {history.length > 0 && (
-                                    <p className="mt-1">
+                                {user && history.length > 0 && (
+                                    <p>
                                         🎉 You&#39;ve learned {Math.floor(history.length / 2)} Hebrew phrases today!
+                                        <span className="mx-2">•</span>
+                                        <span className="text-green-600 font-bold">💾 Click "Save Word" to build your collection!</span>
                                     </p>
                                 )}
                             </div>

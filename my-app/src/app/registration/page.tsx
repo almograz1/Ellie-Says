@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
-  createUserWithEmailAndPassword,
-  sendEmailVerification,
-  signOut
+    createUserWithEmailAndPassword,
+    sendEmailVerification,
+    signOut, updateProfile
 } from 'firebase/auth'
 import { auth } from '@/firebase'
 import { registerUser, UserProfile } from '@/firebaseService'
@@ -45,6 +45,7 @@ export default function RegistrationPage() {
 
     try {
       const { user } = await createUserWithEmailAndPassword(auth, email, password)
+            await updateProfile(user, {displayName})
       await sendEmailVerification(user)
 
       const profile: UserProfile = {
