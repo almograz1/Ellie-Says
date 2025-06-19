@@ -34,6 +34,10 @@ export default function WordMatchPage() {
   const [errorPair, setErrorPair] = useState<[string, string] | null>(null);
   const [gameOver, setGameOver] = useState(false);
 
+  // Ellie animation states
+  const [showEllie, setShowEllie] = useState(false);
+  const [ellieCorrect, setEllieCorrect] = useState(false);
+
   const { theme } = useTheme();
   const db = getFirestore(app);
 
@@ -76,12 +80,24 @@ export default function WordMatchPage() {
         p => p.english === selectedEnglish && p.hebrew === selectedHebrew
       );
       const isCorrect = Boolean(match);
+
       setMatchedPairs(prev => isCorrect ? [...prev, [selectedEnglish, selectedHebrew]] : prev);
-      setFeedbackLog(prev => [...prev, { english: selectedEnglish, hebrew: selectedHebrew, result: isCorrect ? 'Correct' : 'Wrong' }]);
+      setFeedbackLog(prev => [...prev, {
+        english: selectedEnglish,
+        hebrew: selectedHebrew,
+        result: isCorrect ? 'Correct' : 'Wrong'
+      }]);
+
+      // Show Ellie animation
+      setEllieCorrect(isCorrect);
+      setShowEllie(true);
+      setTimeout(() => setShowEllie(false), 1200);
+
       if (!isCorrect) {
         setErrorPair([selectedEnglish, selectedHebrew]);
         setTimeout(() => setErrorPair(null), 600);
       }
+
       setSelectedEnglish(null);
       setSelectedHebrew(null);
     }
@@ -107,7 +123,23 @@ export default function WordMatchPage() {
     <div className={`min-h-screen flex flex-col items-center justify-center p-10 text-2xl
       ${theme === 'light'
         ? 'bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 text-purple-800'
-        : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900 text-purple-200'}`}>      
+        : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900 text-purple-200'}`}>
+
+      {/* Ellie Character - Fixed on left side */}
+      <div className="fixed left-8 top-1/2 transform -translate-y-1/2 z-40 pointer-events-none">
+        <img
+          src={showEllie ? (ellieCorrect ? "/ellie0001.png" : "/ellie0003.png") : "/ellie0001.png"}
+          alt="Ellie"
+          className={`w-144 h-144 object-contain transition-opacity duration-200 ${
+            showEllie
+              ? ellieCorrect
+                ? "animate-[shake-vertical_0.8s_ease-in-out]"
+                : "animate-[shake-horizontal_0.8s_ease-in-out]"
+              : "opacity-80"
+          }`}
+        />
+      </div>
+
       <div className="max-w-5xl w-full">
         {gameOver ? (
           isGuest ? (
@@ -243,6 +275,20 @@ export default function WordMatchPage() {
           </div>
         )}
       </div>
+
+      <style jsx>{`
+        @keyframes shake-vertical {
+          0%, 100% { transform: translateY(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateY(-10px); }
+          20%, 40%, 60%, 80% { transform: translateY(10px); }
+        }
+
+        @keyframes shake-horizontal {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+          20%, 40%, 60%, 80% { transform: translateX(10px); }
+        }
+      `}</style>
     </div>
   );
 }

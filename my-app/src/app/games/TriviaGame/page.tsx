@@ -48,6 +48,8 @@ export default function TriviaGamePage() {
   const [isLoading,    setIsLoading]    = useState(true);
   const [isGuest,      setIsGuest]      = useState(false);
   const [showSummary,  setShowSummary]  = useState(false);
+  const [showEllie,    setShowEllie]    = useState(false);
+  const [ellieCorrect, setEllieCorrect] = useState(false);
 
   // wait for Firebase auth to initialize
   const [authReady, setAuthReady] = useState(false);
@@ -73,6 +75,7 @@ export default function TriviaGamePage() {
       setShowSentence(false);
       setShowEmoji(false);
       setShowSummary(false);
+      setShowEllie(false);
     } catch (err) {
       console.error('Failed to load trivia rounds:', err);
     } finally {
@@ -105,7 +108,12 @@ export default function TriviaGamePage() {
 
     setAnswers(a => [...a, { hebrew: q.hebrewWord, correct, selected: option, result: isCorrect ? 'Correct' : 'Wrong' }]);
 
+    // Show Ellie with animation
+    setEllieCorrect(isCorrect);
+    setShowEllie(true);
+
     setTimeout(() => {
+      setShowEllie(false);
       if (currentIndex + 1 >= questions.length) {
         setShowSummary(true);
         if (!isGuest) saveResults(score + (isCorrect ? 1 : 0));
@@ -153,11 +161,26 @@ export default function TriviaGamePage() {
 
   return (
     <div className={
-      `min-h-screen flex flex-col items-center justify-center p-10 text-xl
+      `min-h-screen flex flex-col items-center justify-center p-10 text-xl relative
       ${theme==='light'
         ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200 text-purple-800'
         : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900 text-purple-200'}`
     }>
+      {/* Ellie Character - Always visible on left side */}
+      <div className="fixed left-8 top-1/2 transform -translate-y-1/2 z-40 pointer-events-none">
+        <img
+          src={showEllie ? (ellieCorrect ? "/ellie0001.png" : "/ellie0003.png") : "/ellie0001.png"}
+          alt="Ellie"
+          className={`w-144 h-144 object-contain transition-opacity duration-200 ${
+            showEllie
+              ? ellieCorrect 
+                ? "animate-[shake-vertical_0.8s_ease-in-out]" 
+                : "animate-[shake-horizontal_0.8s_ease-in-out]"
+              : "opacity-80"
+          }`}
+        />
+      </div>
+
       {!showSummary ? (
         <div className={
           `backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center
@@ -238,6 +261,20 @@ export default function TriviaGamePage() {
           </div>
         )
       )}
+
+      <style jsx>{`
+        @keyframes shake-vertical {
+          0%, 100% { transform: translateY(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateY(-10px); }
+          20%, 40%, 60%, 80% { transform: translateY(10px); }
+        }
+        
+        @keyframes shake-horizontal {
+          0%, 100% { transform: translateX(0); }
+          10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+          20%, 40%, 60%, 80% { transform: translateX(10px); }
+        }
+      `}</style>
     </div>
   );
 }

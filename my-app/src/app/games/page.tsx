@@ -75,6 +75,60 @@ export default function GamesPage() {
     >
       <Navbar />
 
+      {/* Ellie Character - Always visible on left side */}
+      <div className="fixed left-8 top-1/2 transform -translate-y-1/2 z-40 pointer-events-none hidden lg:block">
+        <div className="relative">
+          <img
+            src="/ellie0002.png"
+            alt="Ellie the Game Master"
+            className="w-144 h-144 object-contain drop-shadow-2xl opacity-90"
+          />
+
+          {/* Speech bubble */}
+          <div
+            className={`absolute -top-12 -right-16 backdrop-blur-sm rounded-2xl p-4 shadow-lg border-2 max-w-sm transition-all duration-300 ${
+              theme === 'light'
+                ? 'bg-white/95 border-purple-200'
+                : 'bg-gray-800/95 border-purple-400'
+            }`}
+          >
+            <div
+              className={`font-medium text-sm ${
+                theme === 'light' ? 'text-purple-700' : 'text-purple-300'
+              }`}
+            >
+              {!hoveredGame &&
+                "Ready to play some awesome Hebrew games? Pick your favorite and let's start learning! 🎮✨"}
+              {hoveredGame === 'word-match' &&
+                'Word Match is perfect for beginners! Match Hebrew words with English meanings! 🔤💫'}
+              {hoveredGame === 'TriviaGame' &&
+                'Quiz time! Test how much Hebrew you know! It\'s like a fun brain workout! 🧠🎯'}
+              {hoveredGame === 'photo-word' &&
+                'Image Word lets you drag letters to spell the Hebrew word for the picture! 🖼️✏️'}
+            </div>
+            {/* Speech bubble tail */}
+            <div
+              className={`absolute bottom-0 left-10 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent transform translate-y-full ${
+                theme === 'light'
+                  ? 'border-t-white/95'
+                  : 'border-t-gray-800/95'
+              }`}
+            ></div>
+          </div>
+
+          {/* Decorative emojis */}
+          <div className="absolute top-32 left-24 text-3xl opacity-60">
+            🎮
+          </div>
+          <div className="absolute top-48 right-32 text-2xl opacity-60">
+            🌟
+          </div>
+          <div className="absolute top-64 left-36 text-xl opacity-60">
+            🎯
+          </div>
+        </div>
+      </div>
+
       <main className="max-w-7xl mx-auto px-6 py-12 pt-24">
         {/* Centered Header */}
         <div className="text-center mb-12">
@@ -101,64 +155,10 @@ export default function GamesPage() {
           </p>
         </div>
 
-        <div className="flex items-start justify-center gap-12">
-          {/* Ellie Character */}
-          <div className="hidden lg:block flex-shrink-0 mt-8">
-            <div className="relative">
-              <img
-                src="/ellie-fullbody.png"
-                alt="Ellie the Game Master"
-                className="w-80 h-auto drop-shadow-2xl"
-              />
-
-              {/* Speech bubble */}
-              <div
-                className={`absolute -top-6 -right-10 backdrop-blur-sm rounded-2xl p-4 shadow-lg border-2 max-w-sm transition-all duration-300 ${
-                  theme === 'light'
-                    ? 'bg-white/95 border-purple-200'
-                    : 'bg-gray-800/95 border-purple-400'
-                }`}
-              >
-                <div
-                  className={`font-medium text-sm ${
-                    theme === 'light' ? 'text-purple-700' : 'text-purple-300'
-                  }`}
-                >
-                  {!hoveredGame &&
-                    "Ready to play some awesome Hebrew games? Pick your favorite and let's start learning! 🎮✨"}
-                  {hoveredGame === 'word-match' &&
-                    'Word Match is perfect for beginners! Match Hebrew words with English meanings! 🔤💫'}
-                  {hoveredGame === 'TriviaGame' &&
-                    'Quiz time! Test how much Hebrew you know! It\'s like a fun brain workout! 🧠🎯'}
-                  {hoveredGame === 'photo-word' &&
-                    'Image Word lets you drag letters to spell the Hebrew word for the picture! 🖼️✏️'}
-                </div>
-                {/* Speech bubble tail */}
-                <div
-                  className={`absolute bottom-0 left-10 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent transform translate-y-full ${
-                    theme === 'light'
-                      ? 'border-t-white/95'
-                      : 'border-t-gray-800/95'
-                  }`}
-                ></div>
-              </div>
-
-              {/* Decorative emojis */}
-              <div className="absolute top-20 left-16 text-2xl opacity-60">
-                🎮
-              </div>
-              <div className="absolute top-32 right-20 text-xl opacity-60">
-                🌟
-              </div>
-              <div className="absolute top-40 left-24 text-lg opacity-60">
-                🎯
-              </div>
-            </div>
-          </div>
-
-          {/* Games grid */}
-          <div className="flex-1 max-w-4xl">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Games grid - centered with proper spacing for left Ellie */}
+        <div className="flex justify-center">
+          <div className="max-w-4xl lg:ml-72">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
               {games.map((game) => (
                 <div
                   key={game.id}
@@ -231,27 +231,27 @@ export default function GamesPage() {
               ))}
             </div>
           </div>
+        </div>
 
-          {/* Mobile Ellie */}
-          <div className="lg:hidden fixed bottom-6 right-6 z-10">
-            <img
-              src="/ellie-fullbody.png"
-              alt="Ellie"
-              className={`w-24 h-auto drop-shadow-lg opacity-90 transition-transform duration-300 ${
-                hoveredGame ? 'animate-bounce' : ''
-              }`}
-            />
-            {hoveredGame && (
-              <>
-                <div className="absolute -top-2 -left-2 text-lg animate-ping">
-                  🎮
-                </div>
-                <div className="absolute -top-1 -right-1 text-sm animate-ping delay-150">
-                  🌟
-                </div>
-              </>
-            )}
-          </div>
+        {/* Mobile Ellie */}
+        <div className="lg:hidden fixed bottom-6 right-6 z-10">
+          <img
+            src="/ellie0002.png"
+            alt="Ellie"
+            className={`w-24 h-auto drop-shadow-lg opacity-90 transition-transform duration-300 ${
+              hoveredGame ? 'animate-bounce' : ''
+            }`}
+          />
+          {hoveredGame && (
+            <>
+              <div className="absolute -top-2 -left-2 text-lg animate-ping">
+                🎮
+              </div>
+              <div className="absolute -top-1 -right-1 text-sm animate-ping delay-150">
+                🌟
+              </div>
+            </>
+          )}
         </div>
       </main>
     </div>
