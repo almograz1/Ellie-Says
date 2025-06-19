@@ -66,7 +66,7 @@ export default function GamesPage() {
       >
         <Navbar />
 
-        <main className="max-w-7xl mx-auto px-6 py-12 pt-24">
+        <main className="max-w-8xl mx-auto px-6 py-12 pt-24">
           {/* Centered Header */}
           <div className="text-center mb-12">
             <h1 className={`text-5xl font-extrabold mb-4
@@ -86,19 +86,19 @@ export default function GamesPage() {
             </p>
           </div>
 
-          <div className="flex items-start justify-center gap-12">
+          <div className="flex items-start justify-start gap-8 xl:gap-16">
 
-            {/* Ellie Character - Positioned Lower */}
-            <div className="hidden lg:block flex-shrink-0 mt-8">
+            {/* Ellie Character - Positioned Lower - MUCH BIGGER SIZE */}
+            <div className="hidden lg:block flex-shrink-0 mt-20 ml-4">
               <div className="relative">
                 <img
-                    src="/ellie-fullbody.png"
+                    src="/ellie0002.png"
                     alt="Ellie the Game Master"
-                    className="w-80 h-auto drop-shadow-2xl"
+                    className="w-[28rem] xl:w-[32rem] h-auto drop-shadow-2xl"
                 />
 
-                {/* Speech bubble */}
-                <div className={`absolute -top-6 -right-10 backdrop-blur-sm 
+                {/* Speech bubble - keeping it at the same absolute position */}
+                <div className={`absolute -top-18 -right-10 backdrop-blur-sm 
                   rounded-2xl p-4 shadow-lg border-2 max-w-sm transition-all duration-300 ${
                     theme === 'light'
                         ? 'bg-white/95 border-purple-200'
@@ -129,9 +129,9 @@ export default function GamesPage() {
             </div>
 
             {/* Main Games Container */}
-            <div className="flex-1 max-w-4xl">
+            <div className="flex-1 max-w-3xl xl:max-w-4xl">
               {/* Games Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 xl:gap-8">
                 {games.map(game => (
                     <div
                         key={game.id}
@@ -191,12 +191,12 @@ export default function GamesPage() {
               </div>
             </div>
 
-            {/* Mobile Ellie (shows on smaller screens) */}
+            {/* Mobile Ellie (shows on smaller screens) - BIGGER SIZE */}
             <div className="lg:hidden fixed bottom-6 right-6 z-10">
               <img
-                  src="/ellie-fullbody.png"
+                  src="/ellie0002.png"
                   alt="Ellie"
-                  className={`w-24 h-auto drop-shadow-lg opacity-90 transition-transform duration-300 ${
+                  className={`w-32 h-auto drop-shadow-lg opacity-90 transition-transform duration-300 ${
                       hoveredGame ? 'animate-bounce' : ''
                   }`}
               />

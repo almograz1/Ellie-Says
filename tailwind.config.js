@@ -11,3 +11,20 @@ module.exports = {
   },
   plugins: [],
 }
+// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      animation: {
+        'shake-x': 'shakeX 0.6s ease-in-out',
+      },
+      keyframes: {
+        shakeX: {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '25%': { transform: 'translateX(-10px)' },
+          '75%': { transform: 'translateX(10px)' },
+        },
+      },
+    },
+  },
+};

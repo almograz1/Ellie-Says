@@ -13,12 +13,48 @@ export default function TranslatePage() {
     const [input, setInput] = useState('')
     const [loadingAI, setLoadingAI] = useState(false)
     const [blocked, setBlocked] = useState(false)
+    const [currentEllieImage, setCurrentEllieImage] = useState('/ellie_talking0001.png')
+    const [isTalking, setIsTalking] = useState(false)
+
+    const talkingImages = [
+        '/ellie_talking0001.png',
+        '/ellie_talking0002.png',
+        '/ellie_talking0003.png',
+        '/ellie_talking0004.png',
+        '/ellie_talking0005.png'
+    ]
 
     useEffect(() => {
         if (!loading && !user && hasExceededGuestLimit()) {
             setBlocked(true)
         }
     }, [loading, user])
+
+    // Animation effect for talking
+    useEffect(() => {
+        let interval: NodeJS.Timeout | null = null
+        let timeout: NodeJS.Timeout | null = null
+
+        if (isTalking) {
+            // Start cycling through talking images
+            interval = setInterval(() => {
+                const randomIndex = Math.floor(Math.random() * talkingImages.length)
+                setCurrentEllieImage(talkingImages[randomIndex])
+            }, 150) // Change image every 150ms for smooth animation
+
+            // Stop after 2 seconds
+            timeout = setTimeout(() => {
+                setIsTalking(false)
+                setCurrentEllieImage('/ellie_talking0001.png')
+                if (interval) clearInterval(interval)
+            }, 2000)
+        }
+
+        return () => {
+            if (interval) clearInterval(interval)
+            if (timeout) clearTimeout(timeout)
+        }
+    }, [isTalking])
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
@@ -35,6 +71,7 @@ export default function TranslatePage() {
         const userMsg = { role: 'user', content: input }
         setHistory((h) => [...h, userMsg])
         setLoadingAI(true)
+        setIsTalking(true) // Start talking animation
 
         const res = await fetch('/api/translate', {
             method: 'POST',
@@ -95,16 +132,16 @@ export default function TranslatePage() {
                 ? 'bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200'
                 : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}`}
         >
-            <div className="flex items-center justify-center gap-12 max-w-7xl w-full">
+            <div className="flex items-start justify-center gap-8 max-w-none w-full">
 
-                {/* Ellie Character */}
-                <div className="hidden lg:block flex-shrink-0">
+                {/* Ellie Character - positioned on the left */}
+                <div className="hidden lg:block flex-shrink-0 w-[600px] mt-48 -ml-32">
                     <div className="relative">
                         <img
-                            src="/ellie-fullbody.png"
+                            src={currentEllieImage}
                             alt="Ellie the Translator"
-                            className={`w-80 h-auto drop-shadow-2xl transition-transform duration-300 ${
-                                loadingAI ? 'animate-bounce' : ''
+                            className={`w-[600px] h-auto drop-shadow-2xl transition-transform duration-300 ${
+                                isTalking ? '' : ''
                             }`}
                         />
                         {/* Speech bubble */}
@@ -135,7 +172,7 @@ export default function TranslatePage() {
                         </div>
 
                         {/* Talking animation sparkles */}
-                        {loadingAI && (
+                        {(loadingAI || isTalking) && (
                             <>
                                 <div className="absolute top-20 left-16 text-2xl animate-ping">✨</div>
                                 <div className="absolute top-32 right-20 text-xl animate-ping delay-150">🌟</div>
@@ -146,7 +183,7 @@ export default function TranslatePage() {
                 </div>
 
                 {/* Main Chat Container */}
-                <div className="flex-1 max-w-4xl">
+                <div className="flex-1 min-w-0 max-w-4xl">
                     {/* Header */}
                     <div className="text-center mb-8">
                         <h1 className={`text-5xl font-extrabold mb-3
@@ -281,13 +318,13 @@ export default function TranslatePage() {
                 {/* Mobile Ellie (shows on smaller screens) */}
                 <div className="lg:hidden fixed bottom-6 right-6 z-10">
                     <img
-                        src="/ellie-fullbody.png"
+                        src={currentEllieImage}
                         alt="Ellie"
-                        className={`w-24 h-auto drop-shadow-lg opacity-90 transition-transform duration-300 ${
-                            loadingAI ? 'animate-bounce' : ''
+                        className={`w-80 h-auto drop-shadow-lg opacity-90 transition-transform duration-300 ${
+                            isTalking ? '' : ''
                         }`}
                     />
-                    {loadingAI && (
+                    {(loadingAI || isTalking) && (
                         <>
                             <div className="absolute -top-2 -left-2 text-lg animate-ping">✨</div>
                             <div className="absolute -top-1 -right-1 text-sm animate-ping delay-150">🌟</div>
