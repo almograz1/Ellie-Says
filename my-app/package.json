@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@google/genai": "^1.5.1",
     "@google/generative-ai": "^0.24.1",
     "firebase": "^11.8.1",
     "framer-motion": "^12.12.2",

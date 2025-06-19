@@ -70,3 +70,6 @@ npm install next-themes
 
 (might not need to install only if problems):
 npm install tailwindcss
+
+#npm i @google/genai
+installs Google’s official GenAI JavaScript SDK so your server-side code can call Gemini models (text and image generation) via import { GoogleGenAI } from '@google/genai'.
