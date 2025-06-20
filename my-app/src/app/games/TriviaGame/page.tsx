@@ -9,7 +9,7 @@ import {
   addDoc,
   serverTimestamp
 } from 'firebase/firestore';
-import { app } from '../../../firebase';
+import { app } from '@/firebase';
 import { useTheme } from '@/lib/ThemeContext';
 
 /* ---------- server-payload types ---------- */
