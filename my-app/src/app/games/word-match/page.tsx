@@ -158,8 +158,8 @@ export default function WordMatchPage() {
             />
           </div>
 
-          {/* Mobile Ellie - positioned at bottom */}
-          <div className="fixed bottom-0 left-0 sm:hidden z-5">
+          {/* Mobile Ellie - positioned at bottom with higher z-index and pointer-events-none */}
+          <div className="fixed bottom-0 left-0 sm:hidden z-50 pointer-events-none">
             <img
                 src={showEllie ? (ellieCorrect ? "/ellie0001.png" : "/ellie0003.png") : "/ellie0001.png"}
                 alt="Ellie"
@@ -173,8 +173,8 @@ export default function WordMatchPage() {
             />
           </div>
 
-          {/* Game board */}
-          <div className="max-w-5xl w-full mt-4 sm:mt-10 lg:mt-20 z-10">
+          {/* Game board - added bottom padding for mobile to prevent overlap with Ellie */}
+          <div className="max-w-5xl w-full mt-4 sm:mt-10 lg:mt-20 z-10 pb-32 sm:pb-0">
             {gameOver ? (
                 isGuest ? (
                     <div className={`text-center backdrop-blur-md rounded-2xl shadow-2xl p-6 sm:p-8 lg:p-10
