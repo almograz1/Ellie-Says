@@ -26,8 +26,8 @@ const initialGames: GameOption[] = [
   },
   {
     id: 'TriviaGame',
-    title: 'Hebrew Quiz Adventure',
-    description: 'Pick the correct English meaning for Hebrew words! Test your knowledge! 🎯',
+    title: 'Hebrew Trivia Challenge',
+    description: 'Answer trivia questions about Hebrew words and meanings! Test your knowledge! 🧠',
     icon: '🎮',
     color: 'from-green-400 to-emerald-400',
     difficulty: 'Medium'
@@ -100,7 +100,7 @@ export default function GamesPage() {
                   {hoveredGame === 'word-match' &&
                       'Word Match is perfect for beginners! Match Hebrew words with English meanings! 🔤💫'}
                   {hoveredGame === 'TriviaGame' &&
-                      'Quiz time! Test how much Hebrew you know! It\'s like a fun brain workout! 🧠🎯'}
+                      'Trivia Challenge will test your Hebrew knowledge! Answer fun questions and learn! 🧠🎯'}
                   {hoveredGame === 'photo-word' &&
                       'Image Word lets you drag letters to spell the Hebrew word for the picture! 🖼️✏️'}
                 </div>
@@ -112,11 +112,6 @@ export default function GamesPage() {
                     : 'border-t-gray-800/95'}`}
                 ></div>
               </div>
-
-              {/* Decorative sparkles */}
-              <div className="absolute top-20 left-16 text-2xl animate-ping">🎮</div>
-              <div className="absolute top-32 right-20 text-xl animate-ping delay-150">🌟</div>
-              <div className="absolute top-40 left-24 text-lg animate-ping delay-300">🎯</div>
             </div>
           </div>
 
@@ -242,7 +237,7 @@ export default function GamesPage() {
                         {hoveredGame === 'word-match' &&
                             'Word Match is perfect for beginners! 🔤💫'}
                         {hoveredGame === 'TriviaGame' &&
-                            'Quiz time! Test your knowledge! 🧠🎯'}
+                            'Test your Hebrew knowledge with trivia! 🧠🎯'}
                         {hoveredGame === 'photo-word' &&
                             'Drag letters to spell the Hebrew word! 🖼️✏️'}
                       </div>
@@ -264,14 +259,6 @@ export default function GamesPage() {
                         hoveredGame ? 'animate-bounce' : ''
                     }`}
                 />
-
-                {/* Mobile decorative sparkles */}
-                {hoveredGame && (
-                    <>
-                      <div className="absolute top-0 left-8 text-sm animate-ping">🎮</div>
-                      <div className="absolute top-2 right-8 text-xs animate-ping delay-150">🌟</div>
-                    </>
-                )}
               </div>
             </div>
           </div>
