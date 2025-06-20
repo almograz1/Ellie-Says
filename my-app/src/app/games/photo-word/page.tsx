@@ -136,6 +136,9 @@ export default function PhotoWordGame() {
     }
   }, [authReady, sessionEnd, isGuest, summary, db, auth]);
 
+  // Check if all positions are filled
+  const isWordComplete = filled.every(slot => slot !== null);
+
   if (error) return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="p-6 text-red-600 text-center">Error: {error}</div>
@@ -164,7 +167,7 @@ export default function PhotoWordGame() {
   if (sessionEnd) return (
       <Screen theme={theme}>
         <h2 className="text-2xl sm:text-4xl font-bold mb-6">Session Summary</h2>
-        <div className="max-h-48 sm:max-h-64 overflow-y-auto mb-6 space-y-2">
+        <div className="mb-6 space-y-2">
           {summary.map((s,i) => (
               <div key={i} className="flex items-center gap-2 sm:gap-3">
                 <img src={s.imageUrl} alt="" className="w-8 h-8 sm:w-12 sm:h-12 object-contain rounded flex-shrink-0" />
@@ -200,7 +203,17 @@ export default function PhotoWordGame() {
 
         {!submitted ? (
             <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs px-4">
-              <button onClick={handleSubmit} className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl shadow flex-1">Submit</button>
+              <button
+                  onClick={handleSubmit}
+                  disabled={!isWordComplete}
+                  className={`px-6 py-3 rounded-xl shadow flex-1 text-white transition-colors ${
+                      isWordComplete
+                          ? 'bg-purple-500 hover:bg-purple-600 cursor-pointer'
+                          : 'bg-gray-400 cursor-not-allowed'
+                  }`}
+              >
+                Submit
+              </button>
               <button onClick={resetRound} className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl shadow flex-1">Reset</button>
             </div>
         ) : (
