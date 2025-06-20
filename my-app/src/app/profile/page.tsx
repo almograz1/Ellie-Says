@@ -11,7 +11,7 @@ import {
     getDocs,
     orderBy,
     deleteDoc,
-    doc,
+    doc, Timestamp,
 } from 'firebase/firestore';
 import { app } from '../../firebase';
 
@@ -19,7 +19,7 @@ interface SavedWord {
     id: string;
     english: string;
     hebrew: string;
-    createdAt: any;
+    createdAt: Timestamp;
 }
 
 interface TriviaResult {
@@ -30,7 +30,7 @@ interface TriviaResult {
         selected: string;
         result: 'Correct' | 'Wrong';
     }>;
-    createdAt: any;
+    createdAt: Timestamp;
 }
 
 interface WordMatchResult {
@@ -39,7 +39,7 @@ interface WordMatchResult {
         hebrew: string;
         result: 'Correct' | 'Wrong';
     }>;
-    createdAt: any;
+    createdAt: Timestamp;
 }
 
 interface PhotoWordResult {
@@ -47,7 +47,7 @@ interface PhotoWordResult {
         hebrew: string;
         correct: boolean;
     }>;
-    createdAt: any;
+    createdAt: Timestamp;
 }
 
 interface UserStats {

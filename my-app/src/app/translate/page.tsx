@@ -1,7 +1,8 @@
 // app/translate/page.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import { useAuth } from '@/lib/useAuth'
 import { useTheme } from '@/lib/ThemeContext'
 import { hasExceededGuestLimit, incrementGuestPlayCount } from '@/utils/guestLimit'
@@ -15,8 +16,9 @@ export default function TranslatePage() {
     const [blocked, setBlocked] = useState(false)
     const [currentEllieImage, setCurrentEllieImage] = useState('/ellie_talking0001.png')
     const [isTalking, setIsTalking] = useState(false)
+    const [savingWord, setSavingWord] = useState<string | null>(null)
 
-
+    // Move talkingImages outside of component or use useCallback to memoize
     const talkingImages = [
         '/ellie_talking0001.png',
         '/ellie_talking0002.png',
@@ -24,7 +26,6 @@ export default function TranslatePage() {
         '/ellie_talking0004.png',
         '/ellie_talking0005.png'
     ]
-    const [savingWord, setSavingWord] = useState<string | null>(null)
 
     useEffect(() => {
         if (!loading && !user && hasExceededGuestLimit()) {
@@ -32,7 +33,7 @@ export default function TranslatePage() {
         }
     }, [loading, user])
 
-    // Animation effect for talking
+    // Animation effect for talking - fixed dependency array
     useEffect(() => {
         let interval: NodeJS.Timeout | null = null
         let timeout: NodeJS.Timeout | null = null
@@ -56,9 +57,9 @@ export default function TranslatePage() {
             if (interval) clearInterval(interval)
             if (timeout) clearTimeout(timeout)
         }
-    }, [isTalking])
+    }, [isTalking, talkingImages]) // Added talkingImages to dependency array
 
-    async function handleSubmit(e: React.FormEvent) {
+    const handleSubmit = useCallback(async (e: React.FormEvent) => {
         e.preventDefault()
         if (!input.trim() || blocked) return
 
@@ -75,22 +76,28 @@ export default function TranslatePage() {
         setLoadingAI(true)
         setIsTalking(true) // Start talking animation
 
-        const res = await fetch('/api/translate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: input, history })
-        })
-        const { answer, error } = await res.json()
-        setLoadingAI(false)
+        try {
+            const res = await fetch('/api/translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: input, history })
+            })
+            const { answer, error } = await res.json()
+            setLoadingAI(false)
 
-        if (error) {
-            alert('Error: ' + error)
-            return
+            if (error) {
+                alert('Error: ' + error)
+                return
+            }
+
+            setHistory((h) => [...h, { role: 'assistant', content: answer }])
+            setInput('')
+        } catch (error) {
+            setLoadingAI(false)
+            console.error('Translation error:', error)
+            alert('Failed to translate. Please try again.')
         }
-
-        setHistory((h) => [...h, { role: 'assistant', content: answer }])
-        setInput('')
-    }
+    }, [input, blocked, user, history])
 
     const saveWord = async (english: string, hebrew: string) => {
         if (!user) {
@@ -117,7 +124,7 @@ export default function TranslatePage() {
             if (response.ok) {
                 // Success notification
                 const notification = document.createElement('div')
-                notification.className = `fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg transform transition-all duration-300`
+                notification.className = 'fixed top-4 right-4 z-50 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg transform transition-all duration-300'
                 notification.innerHTML = '✅ Word saved successfully!'
                 document.body.appendChild(notification)
 
@@ -128,7 +135,7 @@ export default function TranslatePage() {
             } else if (response.status === 409) {
                 // Already saved
                 const notification = document.createElement('div')
-                notification.className = `fixed top-4 right-4 z-50 bg-yellow-500 text-white px-6 py-3 rounded-full shadow-lg`
+                notification.className = 'fixed top-4 right-4 z-50 bg-yellow-500 text-white px-6 py-3 rounded-full shadow-lg'
                 notification.innerHTML = '⚠️ Word already saved!'
                 document.body.appendChild(notification)
 
@@ -200,12 +207,15 @@ export default function TranslatePage() {
                 {/* Ellie Character - positioned on the left */}
                 <div className="hidden lg:block flex-shrink-0 w-[600px] mt-48 -ml-32">
                     <div className="relative">
-                        <img
+                        <Image
                             src={currentEllieImage}
                             alt="Ellie the Translator"
+                            width={600}
+                            height={600}
                             className={`w-[600px] h-auto drop-shadow-2xl transition-transform duration-300 ${
                                 isTalking ? '' : ''
                             }`}
+                            priority
                         />
                         {/* Speech bubble */}
                         <div className={`absolute -top-6 -right-10 backdrop-blur-sm 
@@ -411,7 +421,7 @@ export default function TranslatePage() {
                                     <p>
                                         🎉 You&#39;ve learned {Math.floor(history.length / 2)} Hebrew phrases today!
                                         <span className="mx-2">•</span>
-                                        <span className="text-green-600 font-bold">💾 Click "Save Word" to build your collection!</span>
+                                        <span className="text-green-600 font-bold">💾 Click &quot;Save Word&quot; to build your collection!</span>
                                     </p>
                                 )}
                             </div>
@@ -421,9 +431,11 @@ export default function TranslatePage() {
 
                 {/* Mobile Ellie (shows on smaller screens) */}
                 <div className="lg:hidden fixed bottom-6 right-6 z-10">
-                    <img
+                    <Image
                         src={currentEllieImage}
                         alt="Ellie"
+                        width={320}
+                        height={320}
                         className={`w-80 h-auto drop-shadow-lg opacity-90 transition-transform duration-300 ${
                             isTalking ? '' : ''
                         }`}

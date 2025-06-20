@@ -106,12 +106,12 @@ export default function ContactPage() {
                             <h1 className={`text-5xl font-extrabold mb-3
                                 ${theme === 'light' ? 'text-purple-800' : 'text-purple-200'}`}
                             >
-                                Let's Chat with Ellie!
+                                Let&apos;s Chat with Ellie!
                             </h1>
                             <p className={`text-xl font-medium
                                 ${theme === 'light' ? 'text-purple-600' : 'text-purple-300'}`}
                             >
-                                Questions? Ideas? Just want to say hi? I'm all ears!
+                                Questions? Ideas? Just want to say hi? I&apos;m all ears!
                             </p>
                         </div>
 
@@ -164,7 +164,7 @@ export default function ContactPage() {
                                             <label htmlFor="name" className={`block font-bold text-lg mb-2
                                                 ${theme === 'light' ? 'text-purple-700' : 'text-purple-300'}`}
                                             >
-                                                🌟 What's your name, friend?
+                                                🌟 What&apos;s your name, friend?
                                             </label>
                                             <input
                                                 id="name"
@@ -214,7 +214,7 @@ export default function ContactPage() {
                                             <label htmlFor="message" className={`block font-bold text-lg mb-2
                                                 ${theme === 'light' ? 'text-purple-700' : 'text-purple-300'}`}
                                             >
-                                                💭 Tell Ellie what's on your mind!
+                                                💭 Tell Ellie what&apos;s on your mind!
                                             </label>
                                             <textarea
                                                 id="message"

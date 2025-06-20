@@ -129,7 +129,7 @@ export default function GamesPage() {
                 theme === 'light' ? 'text-purple-800' : 'text-purple-200'
               }`}
             >
-              🎮 Ellie's Game Zone! 🎮
+              🎮 Ellie&apos;s Game Zone! 🎮
             </h1>
             <p
               className={`text-xl font-medium mb-2 ${
@@ -143,7 +143,7 @@ export default function GamesPage() {
                 theme === 'light' ? 'text-purple-500' : 'text-purple-400'
               }`}
             >
-              Pick a game and let's make learning an adventure! ✨
+              Pick a game and let&apos;s make learning an adventure! ✨
             </p>
           </div>
 
@@ -212,7 +212,7 @@ export default function GamesPage() {
                   {/* Play button */}
                   <div className="mt-6 text-center">
                     <div className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full shadow-lg transform hover:scale-105 transition-all duration-200">
-                      <span>Let's Play!</span>
+                      <span>Let&apos;s Play!</span>
                       <span className="text-lg">🚀</span>
                     </div>
                   </div>
