@@ -136,56 +136,77 @@ export default function PhotoWordGame() {
     }
   }, [authReady, sessionEnd, isGuest, summary, db, auth]);
 
-  if (error) return <div className="p-6 text-red-600">Error: {error}</div>;
+  if (error) return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="p-6 text-red-600 text-center">Error: {error}</div>
+      </div>
+  );
+
   if (!data || isGuest === null) return (
-      <div className={`min-h-screen flex items-center justify-center ${theme==='light' ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200' : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}`}>
+      <div className={`min-h-screen flex items-center justify-center p-4 ${theme==='light' ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200' : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}`}>
         <div className="text-center">
-          <div className="text-6xl mb-4 animate-spin">🌟</div>
-          <div className={`text-xl font-bold ${theme==='light'?'text-purple-800':'text-purple-200'}`}>Loading game…</div>
+          <div className="text-4xl sm:text-6xl mb-4 animate-spin">🌟</div>
+          <div className={`text-lg sm:text-xl font-bold ${theme==='light'?'text-purple-800':'text-purple-200'}`}>Loading game…</div>
         </div>
       </div>
   );
 
   if (trialEnd) return (
       <Screen theme={theme}>
-        <h2 className="text-3xl font-bold mb-4">Trial Over</h2>
-        <button onClick={() => router.push('/signin')} className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl shadow">Sign Up</button>
+        <h2 className="text-2xl sm:text-3xl font-bold mb-4">Trial Over</h2>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <button onClick={() => router.push('/signin')} className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl shadow">Sign Up</button>
+          <button onClick={() => router.push('/games')} className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl shadow">Return to Games</button>
+        </div>
       </Screen>
   );
 
   if (sessionEnd) return (
       <Screen theme={theme}>
-        <h2 className="text-4xl font-bold mb-6">Session Summary</h2>
-        {summary.map((s,i) => (
-            <div key={i} className="flex items-center gap-3 mb-2">
-              <img src={s.imageUrl} alt="" className="w-12 h-12 object-contain rounded" />
-              <span className={s.correct ? 'text-green-500' : 'text-red-500'}>{s.correct ? '✅' : '❌'}</span>
-              <span className="text-2xl">{s.hebrew}</span>
-            </div>
-        ))}
-        <button onClick={() => window.location.reload()} className="mt-4 bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl shadow">Play Again</button>
+        <h2 className="text-2xl sm:text-4xl font-bold mb-6">Session Summary</h2>
+        <div className="max-h-48 sm:max-h-64 overflow-y-auto mb-6 space-y-2">
+          {summary.map((s,i) => (
+              <div key={i} className="flex items-center gap-2 sm:gap-3">
+                <img src={s.imageUrl} alt="" className="w-8 h-8 sm:w-12 sm:h-12 object-contain rounded flex-shrink-0" />
+                <span className={`text-lg sm:text-xl ${s.correct ? 'text-green-500' : 'text-red-500'}`}>{s.correct ? '✅' : '❌'}</span>
+                <span className="text-lg sm:text-2xl truncate">{s.hebrew}</span>
+              </div>
+          ))}
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <button onClick={() => window.location.reload()} className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl shadow">Play Again</button>
+          <button onClick={() => router.push('/games')} className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl shadow">Return to Games</button>
+        </div>
       </Screen>
   );
 
   const letters = splitCons(data.hebrew);
 
   return (
-      <div className={`min-h-screen flex flex-col items-center justify-center gap-8 p-6 ${theme==='light'?'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200':'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}`}>
-        <h2 className="text-xl font-bold">Round {round} / {isGuest ? GUEST_ROUNDS : USER_ROUNDS}</h2>
-        <img src={data.imageUrl} alt="" className="w-64 h-64 object-contain rounded-xl shadow" />
-        <div dir="rtl" className="flex gap-2">
+      <div className={`min-h-screen flex flex-col items-center justify-center gap-4 sm:gap-8 p-4 sm:p-6 ${theme==='light'?'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200':'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}`}>
+        <h2 className="text-lg sm:text-xl font-bold">Round {round} / {isGuest ? GUEST_ROUNDS : USER_ROUNDS}</h2>
+
+        <div className="w-48 h-48 sm:w-64 sm:h-64 flex-shrink-0">
+          <img src={data.imageUrl} alt="" className="w-full h-full object-contain rounded-xl shadow" />
+        </div>
+
+        <div dir="rtl" className="flex gap-1 sm:gap-2 flex-wrap justify-center max-w-full px-2">
           {letters.map((_,i) => <Blank key={i} letter={filled[i]} onRemove={() => removeLetter(i)} theme={theme} correct={submitted ? filled[i]?.char === letters[i] : undefined} />)}
         </div>
-        <Pool letters={pool} onSelect={selectLetter} theme={theme} />
+
+        <div className="w-full max-w-md px-2">
+          <Pool letters={pool} onSelect={selectLetter} theme={theme} />
+        </div>
+
         {!submitted ? (
-            <div className="flex gap-4">
-              <button onClick={handleSubmit} className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl shadow">Submit</button>
-              <button onClick={resetRound} className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl shadow">Reset</button>
+            <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs px-4">
+              <button onClick={handleSubmit} className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-xl shadow flex-1">Submit</button>
+              <button onClick={resetRound} className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-xl shadow flex-1">Reset</button>
             </div>
         ) : (
-            <div className="flex flex-col items-center gap-3">
-              <p className="text-xl">{correct ? '✅ Correct!' : '❌ Incorrect.'}</p>
-              {showWord && <p className="italic">The word was: {stripNikud(data.hebrew)}</p>}
+            <div className="flex flex-col items-center gap-3 text-center px-4">
+              <p className="text-lg sm:text-xl">{correct ? '✅ Correct!' : '❌ Incorrect.'}</p>
+              {showWord && <p className="italic text-sm sm:text-base">The word was: {stripNikud(data.hebrew)}</p>}
               {(correct || filled.every(Boolean)) ? (
                   <button onClick={handleNext} disabled={loading} className={`px-6 py-3 rounded-xl shadow text-white ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'}`}>{round < (isGuest ? GUEST_ROUNDS : USER_ROUNDS) ? 'Next' : 'Finish'}</button>
               ) : (
@@ -199,8 +220,8 @@ export default function PhotoWordGame() {
 
 function Screen({ children, theme }: { children: React.ReactNode; theme: string }) {
   return (
-      <div className={`min-h-screen flex items-center justify-center p-6 text-center ${theme==='light'?'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200':'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}`}>
-        <div className={`backdrop-blur-md p-10 rounded-2xl shadow-2xl max-w-xl w-full ${theme==='light'?'bg-white/90 text-purple-800':'bg-gray-800/90 text-purple-200'}`}>{children}</div>
+      <div className={`min-h-screen flex items-center justify-center p-4 sm:p-6 text-center ${theme==='light'?'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200':'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}`}>
+        <div className={`backdrop-blur-md p-6 sm:p-10 rounded-2xl shadow-2xl max-w-md sm:max-w-xl w-full ${theme==='light'?'bg-white/90 text-purple-800':'bg-gray-800/90 text-purple-200'}`}>{children}</div>
       </div>
   );
 }
@@ -209,7 +230,7 @@ function Blank({ letter, onRemove, theme, correct }: { letter: Letter | null; on
   let bg = theme==='light' ? 'bg-white' : 'bg-gray-700';
   if (correct !== undefined) bg = correct ? 'bg-green-300' : 'bg-red-300';
   return (
-      <div onClick={() => letter && onRemove()} className={`w-12 h-12 border-b-2 rounded-md flex items-center justify-center ${bg} ${theme==='light'?'border-purple-400':'border-purple-500'} cursor-pointer`}>
+      <div onClick={() => letter && onRemove()} className={`w-10 h-10 sm:w-12 sm:h-12 border-b-2 rounded-md flex items-center justify-center ${bg} ${theme==='light'?'border-purple-400':'border-purple-500'} cursor-pointer text-base sm:text-lg font-semibold flex-shrink-0`}>
         {letter?.char}
       </div>
   );
@@ -217,9 +238,9 @@ function Blank({ letter, onRemove, theme, correct }: { letter: Letter | null; on
 
 function Pool({ letters, onSelect, theme }: { letters: Letter[]; onSelect: (l: Letter) => void; theme: string }) {
   return (
-      <div className="flex flex-wrap justify-center gap-3">
+      <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
         {letters.map(l => (
-            <div key={l.id} onClick={() => onSelect(l)} className={`w-12 h-12 flex items-center justify-center rounded-lg border shadow text-xl font-bold cursor-pointer ${theme==='light'?'bg-white border-purple-300 text-purple-800':'bg-gray-700 border-purple-500 text-purple-200'}`}>
+            <div key={l.id} onClick={() => onSelect(l)} className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center rounded-lg border shadow text-base sm:text-xl font-bold cursor-pointer flex-shrink-0 ${theme==='light'?'bg-white border-purple-300 text-purple-800':'bg-gray-700 border-purple-500 text-purple-200'}`}>
               {l.char}
             </div>
         ))}
