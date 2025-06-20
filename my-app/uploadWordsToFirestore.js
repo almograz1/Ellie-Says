@@ -1,3 +1,5 @@
+'Backup in case gemini apis dont work'
+
 const { firestore } = require('./src/firebase');
 const { collection, doc, setDoc } = require('firebase/firestore');
 const wordData = require('./public/data/wordData.json');

@@ -13,11 +13,12 @@
     "@google/genai": "^1.5.1",
     "@google/generative-ai": "^0.24.1",
     "classnames": "^2.5.1",
-    "firebase": "^11.8.1",
+    "firebase": "^11.9.1",
     "framer-motion": "^12.12.2",
     "google-auth-library": "^10.1.0",
     "lucide-react": "^0.511.0",
-    "next": "15.4.0-canary.81",
+    "next": "^15.4.0-canary.81",
+    "next-themes": "^0.4.6",
     "react": "^19.1.0",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
@@ -31,9 +32,9 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
-    "tailwindcss": "^4",
+    "tailwindcss": "^4.1.10",
     "ts-node": "^10.9.2",
-    "tsx": "^4.19.4",
+    "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   }
 }
