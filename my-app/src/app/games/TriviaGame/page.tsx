@@ -172,117 +172,207 @@ export default function TriviaGamePage() {
   const restart = () => loadRounds();
 
   /* loading */
-  if (isLoading) {
-    return (
-        <div className={`min-h-screen flex items-center justify-center
+  if (isLoading) return (
+    <div className={
+      `min-h-screen flex items-center justify-center text-xl
       ${theme==='light'
-            ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200'
-            : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}`}>
-          <div className="text-center">
-            <div className="text-6xl mb-4 animate-spin">🌟</div>
-            <div className={`text-xl font-bold ${theme==='light'?'text-purple-800':'text-purple-200'}`}>
-              Loading game…
-            </div>
-          </div>
-        </div>
-    );
-  }
-
+        ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200 text-purple-800'
+        : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900 text-purple-200'}`
+    }>
+      Loading game…
+    </div>
+  );
 
   const q = questions[currentIndex];
 
   return (
     <div className={
-      `min-h-screen flex flex-col items-center justify-center p-10 text-xl relative
+      `min-h-screen flex items-center justify-center p-6
       ${theme==='light'
-        ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200 text-purple-800'
-        : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900 text-purple-200'}`
+        ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200'
+        : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}`
     }>
-      {/* Ellie Character */}
-      <div className="absolute left-8 top-1/2 transform -translate-y-1/2 z-40 pointer-events-none">
-        <img
-          src={showEllie
-            ? (ellieCorrect ? "/ellie0001.png" : "/ellie0003.png")
-            : "/ellie0001.png"}
-          alt="Ellie"
-          className={`w-144 h-144 object-contain transition-opacity duration-200 ${
-            showEllie
-              ? ellieCorrect
-                ? "animate-[shake-vertical_0.8s_ease-in-out]"
-                : "animate-[shake-horizontal_0.8s_ease-in-out]"
-              : "opacity-80"
-          }`} />
-      </div>
+      <div className="flex items-start justify-center gap-8 max-w-none w-full">
 
-      {!showSummary ? (
-        <div className={
-          `backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center
-          ${theme==='light'?'bg-white/90 text-purple-800':'bg-gray-800/90 text-purple-200'}`
-        }>
-          <p className="text-lg mb-2">
-            Round {currentIndex+1} / {questions.length}
-          </p>
-          <h1 className="text-4xl font-bold mb-2">
-            What does this word mean?
-          </h1>
-          <h2 className={`text-6xl font-extrabold mb-6 ${theme==='light'?'text-purple-700':'text-purple-300'}`} dir="rtl">
-            {q.hebrewWord}
-          </h2>
+        {/* Ellie Character - positioned on the left with zoom-fixed sizing */}
+        <div className="hidden lg:block flex-shrink-0 w-[600px] mt-28 -ml-92">
+          <div className="relative">
+            <img
+              src={showEllie
+                ? (ellieCorrect ? "/ellie0001.png" : "/ellie0003.png")
+                : "/ellie0001.png"}
+              alt="Ellie"
+              className={`w-[600px] h-auto drop-shadow-2xl transition-all duration-300 ${
+                showEllie
+                  ? ellieCorrect
+                    ? "animate-[shake-vertical_0.8s_ease-in-out]"
+                    : "animate-[shake-horizontal_0.8s_ease-in-out]"
+                  : ""
+              }`}
+            />
+            {/* Speech bubble */}
+            <div className={`absolute -top-6 -right-10 backdrop-blur-sm 
+                rounded-2xl p-4 shadow-lg border-2 max-w-sm transition-all duration-300 ${
+                showEllie ? 'animate-pulse scale-105' : ''
+            } ${theme === 'light'
+                ? 'bg-white/95 border-purple-200'
+                : 'bg-gray-800/95 border-purple-400'}`}
+            >
+              <div className={`font-medium text-sm
+                  ${theme === 'light' ? 'text-purple-700' : 'text-purple-300'}`}
+              >
+                {!showSummary ? (
+                  showEllie ? (
+                    ellieCorrect ? 
+                      "Awesome! You got it right! 🎉✨" : 
+                      "Oops! Better luck next time! 💪"
+                  ) : (
+                    currentIndex === 0 ? 
+                      "Let's test your Hebrew knowledge! Pick the right answer! 🧠🎯" :
+                      "Keep going! You're doing great! 🌟"
+                  )
+                ) : (
+                  isGuest ? 
+                    "Great job! Sign in to play more games! 🎮" :
+                    `Fantastic! You scored ${score} out of ${questions.length}! 🏆`
+                )}
+              </div>
+              {/* Speech bubble tail */}
+              <div className={`absolute bottom-0 left-10 w-0 h-0 border-l-8 border-r-8
+                  border-t-8 border-l-transparent border-r-transparent transform translate-y-full
+                  ${theme === 'light'
+                    ? 'border-t-white/95'
+                    : 'border-t-gray-800/95'}`}
+              ></div>
+            </div>
 
-          <div className="flex justify-center gap-6 mb-6">
-            <button onClick={()=>setShowSentence(true)} className={`px-6 py-2 rounded shadow text-lg ${theme==='light'?'bg-purple-200 hover:bg-purple-300 text-purple-800':'bg-purple-700 hover:bg-purple-600 text-purple-200'}`}>Show Sentence 📘</button>
-            <button onClick={()=>setShowEmoji(true)} className={`px-6 py-2 rounded shadow text-lg ${theme==='light'?'bg-yellow-100 hover:bg-yellow-200 text-purple-800':'bg-yellow-700 hover:bg-yellow-600 text-yellow-100'}`}>Show Emoji 😃</button>
+            {/* Reaction sparkles */}
+            {showEllie && (
+              <>
+                <div className={`absolute top-20 left-16 text-2xl animate-ping ${
+                  ellieCorrect ? 'text-green-500' : 'text-red-500'
+                }`}>
+                  {ellieCorrect ? '✨' : '💫'}
+                </div>
+                <div className={`absolute top-32 right-20 text-xl animate-ping delay-150 ${
+                  ellieCorrect ? 'text-yellow-500' : 'text-orange-500'
+                }`}>
+                  {ellieCorrect ? '🌟' : '🔥'}
+                </div>
+                <div className={`absolute top-40 left-24 text-lg animate-ping delay-300 ${
+                  ellieCorrect ? 'text-blue-500' : 'text-purple-500'
+                }`}>
+                  {ellieCorrect ? '🎉' : '💪'}
+                </div>
+              </>
+            )}
           </div>
-
-          {showSentence && <p className="mb-4 italic text-lg">{q.clueSentence}</p>}
-          {showEmoji    && <p className="text-4xl mb-6">{q.clueEmoji}</p>}
-
-          <div className="grid grid-cols-2 gap-6">
-            {q.options.map(opt => (
-              <button key={opt} onClick={()=>handleSelect(opt)} className={
-                `w-full py-4 rounded-lg shadow-md text-2xl transition-all
-                ${selected
-                  ? opt===q.options[q.correctIndex]
-                    ? 'bg-green-300 text-green-800'
-                    : opt===selected
-                      ? 'bg-red-300 text-red-800'
-                      : theme==='light'?'bg-white text-purple-800':'bg-gray-700 text-purple-200'
-                  : theme==='light'?'bg-white hover:bg-purple-100 text-purple-800':'bg-gray-700 hover:bg-purple-800 text-purple-200'}`
-              }>{opt}</button>
-            ))}
-          </div>
-
-          {selected && (
-            <p className="mt-6 text-2xl font-semibold">
-              {selected===q.options[q.correctIndex] ? "You're Right! ✅" : "Oops! That's not it ❌"}
-            </p>
-          )}
-
-          <p className="mt-4 text-base">Score: {score}</p>
         </div>
-      ) : (
-        isGuest ? (
-          <div className={`backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center ${theme==='light'?'bg-white/90 text-purple-800':'bg-gray-800/90 text-purple-200'}`}>
-            <h2 className="text-3xl font-bold mb-6">🎮 Want More Games?</h2>
-            <p className="text-xl mb-6">If you enjoyed this game, sign up for full access!</p>
-            <button onClick={()=>window.location.href='/signin'} className="bg-purple-400 hover:bg-purple-500 text-white px-6 py-3 rounded shadow text-lg">Sign In / Register</button>
-          </div>
-        ) : (
-          <div className={`backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center ${theme==='light'?'bg-white/90 text-purple-800':'bg-gray-800/90 text-purple-200'}`}>
-            <h2 className="text-4xl font-bold mb-6">🎉 Game Over!</h2>
-            <p className="text-2xl mb-6">Your Score: {score} / {questions.length}</p>
-            <ul className="text-left text-lg mb-6">
-              {answers.map((a,i)=> (
-                <li key={i} className="flex items-center gap-2 mb-2">
-                  {a.result==='Correct' ? <span className="text-green-500 text-2xl">✅</span> : <span className="text-red-500 text-2xl">❌</span>}
-                  <span>You chose {a.selected} - {a.hebrew}</span>
-                </li>
-              ))}
-            </ul>
-            <button onClick={restart} className={`px-6 py-3 rounded shadow text-lg ${theme==='light'?'bg-purple-300 hover:bg-purple-400 text-white':'bg-purple-600 hover:bg-purple-500 text-white'}`}>New Game</button>
-          </div>
-        )
-      )}
+
+        {/* Main Game Container */}
+        <div className="flex-1 min-w-0 max-w-4xl">
+          {!showSummary ? (
+            <div className={
+              `backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full text-center
+              ${theme==='light'?'bg-white/90 text-purple-800':'bg-gray-800/90 text-purple-200'}`
+            }>
+              <p className="text-lg mb-2">
+                Round {currentIndex+1} / {questions.length}
+              </p>
+              <h1 className="text-4xl font-bold mb-2">
+                What does this word mean?
+              </h1>
+              <h2 className={`text-6xl font-extrabold mb-6 ${theme==='light'?'text-purple-700':'text-purple-300'}`} dir="rtl">
+                {q.hebrewWord}
+              </h2>
+
+              <div className="flex justify-center gap-6 mb-6">
+                <button onClick={()=>setShowSentence(true)} className={`px-6 py-2 rounded shadow text-lg ${theme==='light'?'bg-purple-200 hover:bg-purple-300 text-purple-800':'bg-purple-700 hover:bg-purple-600 text-purple-200'}`}>Show Sentence 📘</button>
+                <button onClick={()=>setShowEmoji(true)} className={`px-6 py-2 rounded shadow text-lg ${theme==='light'?'bg-yellow-100 hover:bg-yellow-200 text-purple-800':'bg-yellow-700 hover:bg-yellow-600 text-yellow-100'}`}>Show Emoji 😃</button>
+              </div>
+
+              {showSentence && <p className="mb-4 italic text-lg">{q.clueSentence}</p>}
+              {showEmoji    && <p className="text-4xl mb-6">{q.clueEmoji}</p>}
+
+              <div className="grid grid-cols-2 gap-6">
+                {q.options.map(opt => (
+                  <button key={opt} onClick={()=>handleSelect(opt)} className={
+                    `w-full py-4 rounded-lg shadow-md text-2xl transition-all
+                    ${selected
+                      ? opt===q.options[q.correctIndex]
+                        ? 'bg-green-300 text-green-800'
+                        : opt===selected
+                          ? 'bg-red-300 text-red-800'
+                          : theme==='light'?'bg-white text-purple-800':'bg-gray-700 text-purple-200'
+                      : theme==='light'?'bg-white hover:bg-purple-100 text-purple-800':'bg-gray-700 hover:bg-purple-800 text-purple-200'}`
+                  }>{opt}</button>
+                ))}
+              </div>
+
+              {selected && (
+                <p className="mt-6 text-2xl font-semibold">
+                  {selected===q.options[q.correctIndex] ? "You're Right! ✅" : "Oops! That's not it ❌"}
+                </p>
+              )}
+
+              <p className="mt-4 text-base">Score: {score}</p>
+            </div>
+          ) : (
+            isGuest ? (
+              <div className={`backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full text-center ${theme==='light'?'bg-white/90 text-purple-800':'bg-gray-800/90 text-purple-200'}`}>
+                <h2 className="text-3xl font-bold mb-6">🎮 Want More Games?</h2>
+                <p className="text-xl mb-6">If you enjoyed this game, sign up for full access!</p>
+                <button onClick={()=>window.location.href='/signin'} className="bg-purple-400 hover:bg-purple-500 text-white px-6 py-3 rounded shadow text-lg">Sign In / Register</button>
+              </div>
+            ) : (
+              <div className={`backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full text-center ${theme==='light'?'bg-white/90 text-purple-800':'bg-gray-800/90 text-purple-200'}`}>
+                <h2 className="text-4xl font-bold mb-6">🎉 Game Over!</h2>
+                <p className="text-2xl mb-6">Your Score: {score} / {questions.length}</p>
+                <ul className="text-left text-lg mb-6">
+                  {answers.map((a,i)=> (
+                    <li key={i} className="flex items-center gap-2 mb-2">
+                      {a.result==='Correct' ? <span className="text-green-500 text-2xl">✅</span> : <span className="text-red-500 text-2xl">❌</span>}
+                      <span>You chose {a.selected} - {a.hebrew}</span>
+                    </li>
+                  ))}
+                </ul>
+                <button onClick={restart} className={`px-6 py-3 rounded shadow text-lg ${theme==='light'?'bg-purple-300 hover:bg-purple-400 text-white':'bg-purple-600 hover:bg-purple-500 text-white'}`}>New Game</button>
+              </div>
+            )
+          )}
+        </div>
+
+        {/* Mobile Ellie (shows on smaller screens) */}
+        <div className="lg:hidden fixed bottom-6 right-6 z-10">
+          <img
+            src={showEllie
+              ? (ellieCorrect ? "/ellie0001.png" : "/ellie0003.png")
+              : "/ellie0001.png"}
+            alt="Ellie"
+            className={`w-80 h-auto drop-shadow-lg opacity-90 transition-all duration-300 ${
+              showEllie
+                ? ellieCorrect
+                  ? "animate-[shake-vertical_0.8s_ease-in-out]"
+                  : "animate-[shake-horizontal_0.8s_ease-in-out]"
+                : ""
+            }`}
+          />
+          {showEllie && (
+            <>
+              <div className={`absolute -top-2 -left-2 text-lg animate-ping ${
+                ellieCorrect ? 'text-green-500' : 'text-red-500'
+              }`}>
+                {ellieCorrect ? '✅' : '❌'}
+              </div>
+              <div className={`absolute -top-1 -right-1 text-sm animate-ping delay-150 ${
+                ellieCorrect ? 'text-yellow-500' : 'text-orange-500'
+              }`}>
+                {ellieCorrect ? '🌟' : '💫'}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
 
       <style jsx>{`@keyframes shake-vertical { 0%,100%{transform:translateY(0)}10%,30%,50%,70%,90%{transform:translateY(-10px)}20%,40%,60%,80%{transform:translateY(10px)}}@keyframes shake-horizontal {0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-10px)}20%,40%,60%,80%{transform:translateX(10px)}}`}</style>
     </div>

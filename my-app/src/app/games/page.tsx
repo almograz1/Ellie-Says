@@ -75,185 +75,170 @@ export default function GamesPage() {
     >
       <Navbar />
 
-      {/* Ellie Character - Normal positioning, scrolls with page */}
-      <div className="absolute left-8 top-1/2 transform -translate-y-1/2 z-30 pointer-events-none hidden lg:block">
-        <div className="relative">
-          <img
-            src="/ellie0002.png"
-            alt="Ellie the Game Master"
-            className="w-144 h-144 object-contain drop-shadow-2xl opacity-90"
-          />
-
-          {/* Speech bubble - moved down more */}
-          <div
-            className={`absolute top-4 -right-16 backdrop-blur-sm rounded-2xl p-4 shadow-lg border-2 max-w-sm transition-all duration-300 ${
-              theme === 'light'
-                ? 'bg-white/95 border-purple-200'
-                : 'bg-gray-800/95 border-purple-400'
-            }`}
-          >
-            <div
-              className={`font-medium text-sm ${
-                theme === 'light' ? 'text-purple-700' : 'text-purple-300'
+      <div className="flex items-start justify-center gap-0 max-w-none w-full pt-24">
+        {/* Ellie Character - positioned on the left with zoom-fixed sizing like translate page */}
+        <div className="hidden lg:block flex-shrink-0 w-[600px] mt-60 -ml-142">
+          <div className="relative">
+            <img
+              src="/ellie0002.png"
+              alt="Ellie the Game Master"
+              className="w-[600px] h-auto drop-shadow-2xl transition-transform duration-300"
+            />
+            {/* Speech bubble */}
+            <div className={`absolute -top-28 -right-40 backdrop-blur-sm 
+                rounded-2xl p-4 shadow-lg border-2 max-w-sm transition-all duration-300 ${
+                theme === 'light'
+                  ? 'bg-white/95 border-purple-200'
+                  : 'bg-gray-800/95 border-purple-400'
               }`}
             >
-              {!hoveredGame &&
-                "Ready to play some awesome Hebrew games? Pick your favorite and let's start learning! 🎮✨"}
-              {hoveredGame === 'word-match' &&
-                'Word Match is perfect for beginners! Match Hebrew words with English meanings! 🔤💫'}
-              {hoveredGame === 'TriviaGame' &&
-                'Quiz time! Test how much Hebrew you know! It\'s like a fun brain workout! 🧠🎯'}
-              {hoveredGame === 'photo-word' &&
-                'Image Word lets you drag letters to spell the Hebrew word for the picture! 🖼️✏️'}
+              <div className={`font-medium text-sm
+                  ${theme === 'light' ? 'text-purple-700' : 'text-purple-300'}`}
+              >
+                {!hoveredGame &&
+                  "Ready to play some awesome Hebrew games? Pick your favorite and let's start learning! 🎮✨"}
+                {hoveredGame === 'word-match' &&
+                  'Word Match is perfect for beginners! Match Hebrew words with English meanings! 🔤💫'}
+                {hoveredGame === 'TriviaGame' &&
+                  'Quiz time! Test how much Hebrew you know! It\'s like a fun brain workout! 🧠🎯'}
+                {hoveredGame === 'photo-word' &&
+                  'Image Word lets you drag letters to spell the Hebrew word for the picture! 🖼️✏️'}
+              </div>
+              {/* Speech bubble tail */}
+              <div className={`absolute bottom-0 left-10 w-0 h-0 border-l-8 border-r-8
+                  border-t-8 border-l-transparent border-r-transparent transform translate-y-full
+                  ${theme === 'light'
+                    ? 'border-t-white/95'
+                    : 'border-t-gray-800/95'}`}
+              ></div>
             </div>
-            {/* Speech bubble tail */}
-            <div
-              className={`absolute bottom-0 left-10 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent transform translate-y-full ${
-                theme === 'light'
-                  ? 'border-t-white/95'
-                  : 'border-t-gray-800/95'
+
+            {/* Decorative sparkles */}
+            <div className="absolute top-20 left-16 text-2xl animate-ping">🎮</div>
+            <div className="absolute top-32 right-20 text-xl animate-ping delay-150">🌟</div>
+            <div className="absolute top-40 left-24 text-lg animate-ping delay-300">🎯</div>
+          </div>
+        </div>
+
+        {/* Main Content Container */}
+        <div className="flex-1 min-w-0 max-w-4xl px-6 py-12">
+          {/* Centered Header */}
+          <div className="text-center mb-12">
+            <h1
+              className={`text-5xl font-extrabold mb-4 ${
+                theme === 'light' ? 'text-purple-800' : 'text-purple-200'
               }`}
-            ></div>
+            >
+              🎮 Ellie's Game Zone! 🎮
+            </h1>
+            <p
+              className={`text-xl font-medium mb-2 ${
+                theme === 'light' ? 'text-purple-600' : 'text-purple-300'
+              }`}
+            >
+              Learn Hebrew through super fun games! 🚀
+            </p>
+            <p
+              className={`text-lg ${
+                theme === 'light' ? 'text-purple-500' : 'text-purple-400'
+              }`}
+            >
+              Pick a game and let's make learning an adventure! ✨
+            </p>
           </div>
 
-          {/* Decorative emojis */}
-          <div className="absolute top-32 left-24 text-3xl opacity-60">
-            🎮
-          </div>
-          <div className="absolute top-48 right-32 text-2xl opacity-60">
-            🌟
-          </div>
-          <div className="absolute top-64 left-36 text-xl opacity-60">
-            🎯
-          </div>
-        </div>
-      </div>
-
-      <main className="max-w-7xl mx-auto px-6 py-12 pt-24">
-        {/* Centered Header */}
-        <div className="text-center mb-12">
-          <h1
-            className={`text-5xl font-extrabold mb-4 ${
-              theme === 'light' ? 'text-purple-800' : 'text-purple-200'
-            }`}
-          >
-            🎮 Ellie's Game Zone! 🎮
-          </h1>
-          <p
-            className={`text-xl font-medium mb-2 ${
-              theme === 'light' ? 'text-purple-600' : 'text-purple-300'
-            }`}
-          >
-            Learn Hebrew through super fun games! 🚀
-          </p>
-          <p
-            className={`text-lg ${
-              theme === 'light' ? 'text-purple-500' : 'text-purple-400'
-            }`}
-          >
-            Pick a game and let's make learning an adventure! ✨
-          </p>
-        </div>
-
-        {/* Games grid - aligned with title */}
-        <div className="flex justify-center">
-          <div className="max-w-4xl">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-              {games.map((game) => (
+          {/* Games grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
+            {games.map((game) => (
+              <div
+                key={game.id}
+                className={`backdrop-blur-md rounded-3xl shadow-2xl border-2 overflow-hidden cursor-pointer transition-all duration-300 transform hover:scale-105 hover:rotate-1 ${
+                  theme === 'light'
+                    ? 'bg-white/90 border-purple-200 hover:shadow-purple-300/50'
+                    : 'bg-gray-800/90 border-purple-400 hover:shadow-purple-500/30'
+                }`}
+                onClick={() => router.push(`/games/${game.id}`)}
+                onMouseEnter={() => setHoveredGame(game.id)}
+                onMouseLeave={() => setHoveredGame(null)}
+              >
+                {/* Header */}
                 <div
-                  key={game.id}
-                  className={`backdrop-blur-md rounded-3xl shadow-2xl border-2 overflow-hidden cursor-pointer transition-all duration-300 transform hover:scale-105 hover:rotate-1 ${
-                    theme === 'light'
-                      ? 'bg-white/90 border-purple-200 hover:shadow-purple-300/50'
-                      : 'bg-gray-800/90 border-purple-400 hover:shadow-purple-500/30'
-                  }`}
-                  onClick={() => router.push(`/games/${game.id}`)}
-                  onMouseEnter={() => setHoveredGame(game.id)}
-                  onMouseLeave={() => setHoveredGame(null)}
+                  className={`bg-gradient-to-r ${game.color} p-6 text-center relative overflow-hidden`}
                 >
-                  {/* Header */}
-                  <div
-                    className={`bg-gradient-to-r ${game.color} p-6 text-center relative overflow-hidden`}
-                  >
-                    <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
-                    <div className="relative z-10">
-                      <div className="text-6xl mb-3">{game.icon}</div>
-                      <div
-                        className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${getDifficultyColor(
-                          game.difficulty
-                        )}`}
-                      >
-                        {game.difficulty}
-                      </div>
-                    </div>
-                    <div className="absolute top-2 right-2 text-xl animate-pulse">
-                      ✨
-                    </div>
-                    <div className="absolute bottom-2 left-2 text-lg animate-pulse delay-150">
-                      🌟
+                  <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+                  <div className="relative z-10">
+                    <div className="text-6xl mb-3">{game.icon}</div>
+                    <div
+                      className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${getDifficultyColor(
+                        game.difficulty
+                      )}`}
+                    >
+                      {game.difficulty}
                     </div>
                   </div>
+                  <div className="absolute top-2 right-2 text-xl animate-pulse">
+                    ✨
+                  </div>
+                  <div className="absolute bottom-2 left-2 text-lg animate-pulse delay-150">
+                    🌟
+                  </div>
+                </div>
 
-                  {/* Body */}
-                  <div
-                    className={`p-6 ${
-                      theme === 'light'
-                        ? 'bg-gradient-to-b from-purple-50/50 to-pink-50/50'
-                        : 'bg-gradient-to-b from-gray-700/50 to-gray-600/50'
+                {/* Body */}
+                <div
+                  className={`p-6 ${
+                    theme === 'light'
+                      ? 'bg-gradient-to-b from-purple-50/50 to-pink-50/50'
+                      : 'bg-gradient-to-b from-gray-700/50 to-gray-600/50'
+                  }`}
+                >
+                  <h3
+                    className={`text-2xl font-bold mb-3 text-center ${
+                      theme === 'light' ? 'text-purple-800' : 'text-purple-200'
                     }`}
                   >
-                    <h3
-                      className={`text-2xl font-bold mb-3 text-center ${
-                        theme === 'light' ? 'text-purple-800' : 'text-purple-200'
-                      }`}
-                    >
-                      {game.title}
-                    </h3>
-                    <p
-                      className={`text-center leading-relaxed ${
-                        theme === 'light'
-                          ? 'text-purple-600'
-                          : 'text-purple-300'
-                      }`}
-                    >
-                      {game.description}
-                    </p>
+                    {game.title}
+                  </h3>
+                  <p
+                    className={`text-center leading-relaxed ${
+                      theme === 'light'
+                        ? 'text-purple-600'
+                        : 'text-purple-300'
+                    }`}
+                  >
+                    {game.description}
+                  </p>
 
-                    {/* Play button */}
-                    <div className="mt-6 text-center">
-                      <div className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full shadow-lg transform hover:scale-105 transition-all duration-200">
-                        <span>Let's Play!</span>
-                        <span className="text-lg">🚀</span>
-                      </div>
+                  {/* Play button */}
+                  <div className="mt-6 text-center">
+                    <div className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold rounded-full shadow-lg transform hover:scale-105 transition-all duration-200">
+                      <span>Let's Play!</span>
+                      <span className="text-lg">🚀</span>
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Mobile Ellie - also scrolls with page */}
-        <div className="lg:hidden absolute bottom-6 right-6 z-30 pointer-events-none">
+        {/* Mobile Ellie (shows on smaller screens) */}
+        <div className="lg:hidden fixed bottom-6 right-6 z-10">
           <img
             src="/ellie0002.png"
             alt="Ellie"
-            className={`w-24 h-auto drop-shadow-lg opacity-90 transition-transform duration-300 ${
+            className={`w-80 h-auto drop-shadow-lg opacity-90 transition-transform duration-300 ${
               hoveredGame ? 'animate-bounce' : ''
             }`}
           />
           {hoveredGame && (
             <>
-              <div className="absolute -top-2 -left-2 text-lg animate-ping">
-                🎮
-              </div>
-              <div className="absolute -top-1 -right-1 text-sm animate-ping delay-150">
-                🌟
-              </div>
+              <div className="absolute -top-2 -left-2 text-lg animate-ping">🎮</div>
+              <div className="absolute -top-1 -right-1 text-sm animate-ping delay-150">🌟</div>
             </>
           )}
         </div>
-      </main>
+      </div>
     </div>
   )
 }

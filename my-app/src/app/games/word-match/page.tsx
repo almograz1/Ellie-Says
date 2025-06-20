@@ -34,7 +34,6 @@ export default function WordMatchPage() {
   const [errorPair, setErrorPair] = useState<[string, string] | null>(null);
   const [gameOver, setGameOver] = useState(false);
 
-  // Ellie animation states
   const [showEllie, setShowEllie] = useState(false);
   const [ellieCorrect, setEllieCorrect] = useState(false);
 
@@ -88,7 +87,6 @@ export default function WordMatchPage() {
         result: isCorrect ? 'Correct' : 'Wrong'
       }]);
 
-      // Show Ellie animation
       setEllieCorrect(isCorrect);
       setShowEllie(true);
       setTimeout(() => setShowEllie(false), 1200);
@@ -134,161 +132,149 @@ export default function WordMatchPage() {
   }
 
   return (
-    <div className={`min-h-screen flex flex-col items-center justify-center p-10 text-2xl
+    <div className={`min-h-screen flex flex-col items-center justify-center text-2xl p-0 relative
       ${theme === 'light'
         ? 'bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 text-purple-800'
         : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900 text-purple-200'}`}>
 
-      {/* Ellie Character */}
-      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 z-40 pointer-events-none">
-
-        <img
-          src={showEllie ? (ellieCorrect ? "/ellie0001.png" : "/ellie0003.png") : "/ellie0001.png"}
-          alt="Ellie"
-          className={`w-144 h-144 object-contain transition-opacity duration-200 ${
-            showEllie
-              ? ellieCorrect
-                ? "animate-[shake-vertical_0.8s_ease-in-out]"
-                : "animate-[shake-horizontal_0.8s_ease-in-out]"
-              : "opacity-80"
-          }`}
-        />
-      </div>
-
-      <div className="max-w-5xl w-full">
-        {gameOver ? (
-          isGuest ? (
-            <div className={`text-center backdrop-blur-md rounded-2xl shadow-2xl p-10
-              ${theme === 'light'
-                ? 'bg-white/90 text-purple-800'
-                : 'bg-gray-800/90 text-purple-200'}`}
-            >
-              <h2 className="text-3xl font-bold mb-6">🎮 Want More Games?</h2>
-              <p className="text-xl mb-6">
-                If you enjoyed this game, sign up for full access to more rounds and all game modes!
-              </p>
-              <button onClick={() => (window.location.href = '/signin')}
-                className="bg-purple-400 hover:bg-purple-500 text-white px-6 py-3 rounded shadow text-lg"
-              >
-                Sign In / Register
-              </button>
-            </div>
-          ) : (
-            <div className={`text-center backdrop-blur-md rounded-2xl shadow-2xl p-10
-              ${theme === 'light'
-                ? 'bg-white/90 text-purple-800'
-                : 'bg-gray-800/90 text-purple-200'}`}
-            >
-              <h2 className="text-3xl font-bold mb-6">🎉 You did it!</h2>
-              <p className="text-xl mb-4">You matched all the pairs!</p>
-              <ul className="text-left text-lg mb-6">
-                {feedbackLog.map((e, i) => (
-                  <li key={i} className="flex items-center gap-2">
-                    {e.result === 'Correct' ? (
-                      <span className="text-green-500 text-2xl">✅</span>
-                    ) : (
-                      <span className="text-red-500 text-2xl">❌</span>
-                    )}
-                    <span>{e.english} → {e.hebrew}</span>
-                  </li>
-                ))}
-              </ul>
-              <button onClick={initializeGame}
-                className={`px-6 py-3 rounded shadow text-lg ${
-                  theme === 'light'
-                    ? 'bg-yellow-400 hover:bg-yellow-500 text-purple-900'
-                    : 'bg-yellow-500 hover:bg-yellow-600 text-gray-900'
-                }`}
-              >
-                Play Again
-              </button>
-            </div>
-          )
-        ) : (
-          <div className={`backdrop-blur-md rounded-2xl shadow-2xl p-10
-            ${theme === 'light' ? 'bg-white/90' : 'bg-gray-800/90'}`}
-          >
-            <h2 className={`text-4xl font-bold mb-10 text-center ${
-              theme === 'light' ? 'text-purple-800' : 'text-purple-200'
+      {/* Layout container: board + ellie */}
+      <div className="relative flex w-full max-w-7xl justify-center items-start">
+        {/* Ellie absolute left-bottom */}
+        <div className="absolute -left-140 top-60 hidden lg:block">
+          <img
+            src={showEllie ? (ellieCorrect ? "/ellie0001.png" : "/ellie0003.png") : "/ellie0001.png"}
+            alt="Ellie"
+            className={`w-[900px] h-auto drop-shadow-2xl transition-all duration-300 ${
+              showEllie
+                ? ellieCorrect
+                  ? "animate-[shake-vertical_0.8s_ease-in-out]"
+                  : "animate-[shake-horizontal_0.8s_ease-in-out]"
+                : "opacity-80"
             }`}
-            >
-              Match the words!
-            </h2>
-            <div className="grid grid-cols-2 gap-16">
-              <div className="flex flex-col items-end gap-6">
-                {englishOptions.map(pair => {
-                  const matched = matchedPairs.some(p => p[0] === pair.english);
-                  const selected = selectedEnglish === pair.english;
-                  const isError = errorPair?.[0] === pair.english;
-                  return (
-                    <button
-                      key={pair.english}
-                      className={`w-60 h-24 rounded-xl shadow text-2xl font-bold transition-colors duration-200
-                        ${matched
-                          ? 'bg-green-300'
-                          : isError
-                          ? 'bg-red-400 text-white'
-                          : selected
-                          ? 'bg-purple-600 text-white'
-                          : theme === 'light'
-                          ? 'bg-white hover:bg-purple-100 text-purple-800'
-                          : 'bg-gray-700 hover:bg-purple-800 text-purple-200'}`}
-                      disabled={matched}
-                      onClick={() => setSelectedEnglish(pair.english)}
-                    >
-                      {pair.english}
-                    </button>
-                  );
-                })}
+          />
+        </div>
+
+        {/* Game board */}
+        <div className="max-w-5xl w-full mt-20 z-10">
+          {gameOver ? (
+            isGuest ? (
+              <div className={`text-center backdrop-blur-md rounded-2xl shadow-2xl p-10
+                ${theme === 'light'
+                  ? 'bg-white/90 text-purple-800'
+                  : 'bg-gray-800/90 text-purple-200'}`}>
+                <h2 className="text-3xl font-bold mb-6">🎮 Want More Games?</h2>
+                <p className="text-xl mb-6">
+                  If you enjoyed this game, sign up for full access to more rounds and all game modes!
+                </p>
+                <button onClick={() => (window.location.href = '/signin')}
+                  className="bg-purple-400 hover:bg-purple-500 text-white px-6 py-3 rounded shadow text-lg">
+                  Sign In / Register
+                </button>
               </div>
-              <div className="flex flex-col items-start gap-6">
-                {hebrewOptions.map(pair => {
-                  const matched = matchedPairs.some(p => p[1] === pair.hebrew);
-                  const selected = selectedHebrew === pair.hebrew;
-                  const isError = errorPair?.[1] === pair.hebrew;
-                  return (
-                    <button
-                      key={pair.hebrew}
-                      className={`w-60 h-24 rounded-xl shadow text-2xl font-bold transition-colors duration-200
-                        ${matched
-                          ? 'bg-green-300'
-                          : isError
-                          ? 'bg-red-400 text-white'
-                          : selected
-                          ? 'bg-yellow-500 text-white'
-                          : theme === 'light'
-                          ? 'bg-white hover:bg-yellow-100 text-purple-800'
-                          : 'bg-gray-700 hover:bg-yellow-800 text-purple-200'}`}
-                      disabled={matched}
-                      onClick={() => setSelectedHebrew(pair.hebrew)}
-                    >
-                      {pair.hebrew}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-            {!isGuest && feedbackLog.length > 0 && (
-              <div className={`mt-10 p-6 rounded-xl shadow text-lg
-                ${theme === 'light' ? 'bg-white/80 text-purple-800' : 'bg-gray-700/80 text-purple-200'}`}
-              >
-                <h3 className="text-2xl font-semibold mb-4">Your Answers</h3>
-                <ul className="list-disc pl-6">
+            ) : (
+              <div className={`text-center backdrop-blur-md rounded-2xl shadow-2xl p-10
+                ${theme === 'light'
+                  ? 'bg-white/90 text-purple-800'
+                  : 'bg-gray-800/90 text-purple-200'}`}>
+                <h2 className="text-3xl font-bold mb-6">🎉 You did it!</h2>
+                <p className="text-xl mb-4">You matched all the pairs!</p>
+                <ul className="text-left text-lg mb-6">
                   {feedbackLog.map((e, i) => (
                     <li key={i} className="flex items-center gap-2">
-                      {e.result === 'Correct' ? (
-                        <span className="text-green-300 text-2xl">✅</span>
-                      ) : (
-                        <span className="text-red-500 text-2xl">❌</span>
-                      )}
+                      {e.result === 'Correct'
+                        ? <span className="text-green-500 text-2xl">✅</span>
+                        : <span className="text-red-500 text-2xl">❌</span>}
                       <span>{e.english} → {e.hebrew}</span>
                     </li>
                   ))}
                 </ul>
+                <button onClick={initializeGame}
+                  className={`px-6 py-3 rounded shadow text-lg ${
+                    theme === 'light'
+                      ? 'bg-yellow-400 hover:bg-yellow-500 text-purple-900'
+                      : 'bg-yellow-500 hover:bg-yellow-600 text-gray-900'}`}>
+                  Play Again
+                </button>
               </div>
-            )}
-          </div>
-        )}
+            )
+          ) : (
+            <div className={`backdrop-blur-md rounded-2xl shadow-2xl p-10
+              ${theme === 'light' ? 'bg-white/90' : 'bg-gray-800/90'}`}>
+              <h2 className={`text-4xl font-bold mb-10 text-center ${
+                theme === 'light' ? 'text-purple-800' : 'text-purple-200'}`}>
+                Match the words!
+              </h2>
+              <div className="grid grid-cols-2 gap-16">
+                <div className="flex flex-col items-end gap-6">
+                  {englishOptions.map(pair => {
+                    const matched = matchedPairs.some(p => p[0] === pair.english);
+                    const selected = selectedEnglish === pair.english;
+                    const isError = errorPair?.[0] === pair.english;
+                    return (
+                      <button
+                        key={pair.english}
+                        className={`w-60 h-24 rounded-xl shadow text-2xl font-bold transition-colors duration-200
+                          ${matched
+                            ? 'bg-green-300'
+                            : isError
+                            ? 'bg-red-400 text-white'
+                            : selected
+                            ? 'bg-purple-600 text-white'
+                            : theme === 'light'
+                            ? 'bg-white hover:bg-purple-100 text-purple-800'
+                            : 'bg-gray-700 hover:bg-purple-800 text-purple-200'}`}
+                        disabled={matched}
+                        onClick={() => setSelectedEnglish(pair.english)}>
+                        {pair.english}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex flex-col items-start gap-6">
+                  {hebrewOptions.map(pair => {
+                    const matched = matchedPairs.some(p => p[1] === pair.hebrew);
+                    const selected = selectedHebrew === pair.hebrew;
+                    const isError = errorPair?.[1] === pair.hebrew;
+                    return (
+                      <button
+                        key={pair.hebrew}
+                        className={`w-60 h-24 rounded-xl shadow text-2xl font-bold transition-colors duration-200
+                          ${matched
+                            ? 'bg-green-300'
+                            : isError
+                            ? 'bg-red-400 text-white'
+                            : selected
+                            ? 'bg-yellow-500 text-white'
+                            : theme === 'light'
+                            ? 'bg-white hover:bg-yellow-100 text-purple-800'
+                            : 'bg-gray-700 hover:bg-yellow-800 text-purple-200'}`}
+                        disabled={matched}
+                        onClick={() => setSelectedHebrew(pair.hebrew)}>
+                        {pair.hebrew}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              {!isGuest && feedbackLog.length > 0 && (
+                <div className={`mt-10 p-6 rounded-xl shadow text-lg
+                  ${theme === 'light' ? 'bg-white/80 text-purple-800' : 'bg-gray-700/80 text-purple-200'}`}>
+                  <h3 className="text-2xl font-semibold mb-4">Your Answers</h3>
+                  <ul className="list-disc pl-6">
+                    {feedbackLog.map((e, i) => (
+                      <li key={i} className="flex items-center gap-2">
+                        {e.result === 'Correct'
+                          ? <span className="text-green-300 text-2xl">✅</span>
+                          : <span className="text-red-500 text-2xl">❌</span>}
+                        <span>{e.english} → {e.hebrew}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       <style jsx>{`
