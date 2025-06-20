@@ -26,6 +26,16 @@ export default function TranslatePage() {
     const [currentEllieImage, setCurrentEllieImage] = useState('/ellie_talking0001.png')
     const [isTalking, setIsTalking] = useState(false)
     const [savingWord, setSavingWord] = useState<string | null>(null)
+    const [guestPlayCount, setGuestPlayCount] = useState(0)
+    const [isClient, setIsClient] = useState(false)
+
+    // Add client-side check
+    useEffect(() => {
+        setIsClient(true)
+        // Only access localStorage after component mounts on client
+        const count = parseInt(localStorage.getItem('guestPlayCount') || '0')
+        setGuestPlayCount(count)
+    }, [])
 
     useEffect(() => {
         if (!loading && !user && hasExceededGuestLimit()) {
@@ -69,6 +79,9 @@ export default function TranslatePage() {
                 setBlocked(true)
                 return
             }
+            // Update local state
+            const newCount = parseInt(localStorage.getItem('guestPlayCount') || '0')
+            setGuestPlayCount(newCount)
         }
 
         const userMsg = { role: 'user', content: input }
@@ -410,9 +423,9 @@ export default function TranslatePage() {
                             <div className={`mt-4 text-center text-sm
                                 ${theme === 'light' ? 'text-purple-600' : 'text-purple-300'}`}
                             >
-                                {!user && (
+                                {!user && isClient && (
                                     <p>
-                                        🎯 Free translations left: {Math.max(0, 3 - (parseInt(localStorage.getItem('guestPlayCount') || '0')))}
+                                        🎯 Free translations left: {Math.max(0, 3 - guestPlayCount)}
                                         <span className="mx-2">•</span>
                                         <span className="text-yellow-600 font-bold">💾 Sign in to save words!</span>
                                     </p>
