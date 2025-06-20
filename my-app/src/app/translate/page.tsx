@@ -16,6 +16,7 @@ export default function TranslatePage() {
     const [currentEllieImage, setCurrentEllieImage] = useState('/ellie_talking0001.png')
     const [isTalking, setIsTalking] = useState(false)
 
+
     const talkingImages = [
         '/ellie_talking0001.png',
         '/ellie_talking0002.png',

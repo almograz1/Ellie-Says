@@ -42,6 +42,14 @@ interface WordMatchResult {
     createdAt: any;
 }
 
+interface PhotoWordResult {
+    summary: Array<{
+        hebrew: string;
+        correct: boolean;
+    }>;
+    createdAt: any;
+}
+
 interface UserStats {
     totalTranslations: number;
     savedWords: number;
@@ -51,6 +59,9 @@ interface UserStats {
     wordMatchGamesPlayed: number;
     wordMatchCorrectAnswers: number;
     wordMatchTotalAnswers: number;
+    photoWordGamesPlayed: number;
+    photoWordCorrectAnswers: number;
+    photoWordTotalAnswers: number;
     level: number;
     totalPoints: number;
 }
@@ -109,6 +120,15 @@ export default function ProfilePage() {
             const wordMatchSnapshot = await getDocs(wordMatchQuery);
             const wordMatchResults = wordMatchSnapshot.docs.map(doc => doc.data()) as WordMatchResult[];
 
+            // Load photo word results
+            const photoWordQuery = query(
+                collection(db, 'photo_word_results'),
+                where('uid', '==', user.uid),
+                orderBy('createdAt', 'desc')
+            );
+            const photoWordSnapshot = await getDocs(photoWordQuery);
+            const photoWordResults = photoWordSnapshot.docs.map(doc => doc.data()) as PhotoWordResult[];
+
             // Calculate stats
             const triviaCorrect = triviaResults.reduce((sum, result) =>
                 sum + result.answers.filter(a => a.result === 'Correct').length, 0
@@ -120,11 +140,16 @@ export default function ProfilePage() {
             );
             const wordMatchTotal = wordMatchResults.reduce((sum, result) => sum + result.results.length, 0);
 
-            const totalPoints = triviaCorrect * 10 + wordMatchCorrect * 15 + words.length * 5;
+            const photoWordCorrect = photoWordResults.reduce((sum, result) =>
+                sum + result.summary.filter(s => s.correct).length, 0
+            );
+            const photoWordTotal = photoWordResults.reduce((sum, result) => sum + result.summary.length, 0);
+
+            const totalPoints = triviaCorrect * 10 + wordMatchCorrect * 15 + photoWordCorrect * 12 + words.length * 5;
             const level = Math.floor(totalPoints / 100) + 1;
 
             setStats({
-                totalTranslations: words.length, // Using saved words as proxy for translations
+                totalTranslations: words.length,
                 savedWords: words.length,
                 triviaGamesPlayed: triviaResults.length,
                 triviaCorrectAnswers: triviaCorrect,
@@ -132,6 +157,9 @@ export default function ProfilePage() {
                 wordMatchGamesPlayed: wordMatchResults.length,
                 wordMatchCorrectAnswers: wordMatchCorrect,
                 wordMatchTotalAnswers: wordMatchTotal,
+                photoWordGamesPlayed: photoWordResults.length,
+                photoWordCorrectAnswers: photoWordCorrect,
+                photoWordTotalAnswers: photoWordTotal,
                 level,
                 totalPoints
             });
@@ -310,6 +338,16 @@ export default function ProfilePage() {
 
                         <div className={`backdrop-blur-md rounded-2xl shadow-xl p-6 text-center
               ${theme === 'light'
+                            ? 'bg-gradient-to-br from-orange-400 to-red-400 text-white'
+                            : 'bg-gradient-to-br from-orange-600 to-red-600 text-white'}`}
+                        >
+                            <div className="text-4xl mb-3">📸</div>
+                            <div className="text-3xl font-bold mb-2">{stats?.photoWordGamesPlayed || 0}</div>
+                            <div className="text-lg font-medium">Photo Word Games</div>
+                        </div>
+
+                        <div className={`backdrop-blur-md rounded-2xl shadow-xl p-6 text-center
+              ${theme === 'light'
                             ? 'bg-gradient-to-br from-yellow-400 to-orange-400 text-white'
                             : 'bg-gradient-to-br from-yellow-600 to-orange-600 text-white'}`}
                         >
@@ -345,14 +383,38 @@ export default function ProfilePage() {
 
                         <div className={`backdrop-blur-md rounded-2xl shadow-xl p-6 text-center
               ${theme === 'light'
+                            ? 'bg-gradient-to-br from-cyan-400 to-blue-400 text-white'
+                            : 'bg-gradient-to-br from-cyan-600 to-blue-600 text-white'}`}
+                        >
+                            <div className="text-4xl mb-3">📷</div>
+                            <div className="text-3xl font-bold mb-2">
+                                {stats?.photoWordTotalAnswers ? Math.round((stats.photoWordCorrectAnswers / stats.photoWordTotalAnswers) * 100) : 0}%
+                            </div>
+                            <div className="text-lg font-medium">Photo Word Accuracy</div>
+                        </div>
+
+                        <div className={`backdrop-blur-md rounded-2xl shadow-xl p-6 text-center
+              ${theme === 'light'
                             ? 'bg-gradient-to-br from-teal-400 to-cyan-400 text-white'
                             : 'bg-gradient-to-br from-teal-600 to-cyan-600 text-white'}`}
                         >
                             <div className="text-4xl mb-3">🔥</div>
                             <div className="text-3xl font-bold mb-2">
-                                {(stats?.triviaCorrectAnswers || 0) + (stats?.wordMatchCorrectAnswers || 0)}
+                                {(stats?.triviaCorrectAnswers || 0) + (stats?.wordMatchCorrectAnswers || 0) + (stats?.photoWordCorrectAnswers || 0)}
                             </div>
                             <div className="text-lg font-medium">Total Correct Answers</div>
+                        </div>
+
+                        <div className={`backdrop-blur-md rounded-2xl shadow-xl p-6 text-center
+              ${theme === 'light'
+                            ? 'bg-gradient-to-br from-emerald-400 to-green-400 text-white'
+                            : 'bg-gradient-to-br from-emerald-600 to-green-600 text-white'}`}
+                        >
+                            <div className="text-4xl mb-3">🎲</div>
+                            <div className="text-3xl font-bold mb-2">
+                                {(stats?.triviaGamesPlayed || 0) + (stats?.wordMatchGamesPlayed || 0) + (stats?.photoWordGamesPlayed || 0)}
+                            </div>
+                            <div className="text-lg font-medium">Total Games Played</div>
                         </div>
                     </div>
                 )}
@@ -439,7 +501,7 @@ export default function ProfilePage() {
                                 title: "First Steps",
                                 description: "Played your first game!",
                                 emoji: "👶",
-                                unlocked: (stats?.triviaGamesPlayed || 0) + (stats?.wordMatchGamesPlayed || 0) >= 1,
+                                unlocked: (stats?.triviaGamesPlayed || 0) + (stats?.wordMatchGamesPlayed || 0) + (stats?.photoWordGamesPlayed || 0) >= 1,
                                 color: "from-green-400 to-emerald-400"
                             },
                             {
@@ -464,6 +526,13 @@ export default function ProfilePage() {
                                 color: "from-yellow-400 to-orange-400"
                             },
                             {
+                                title: "Photo Detective",
+                                description: "Played 5 photo word games",
+                                emoji: "📸",
+                                unlocked: (stats?.photoWordGamesPlayed || 0) >= 5,
+                                color: "from-orange-400 to-red-400"
+                            },
+                            {
                                 title: "Accuracy Star",
                                 description: "90%+ accuracy in trivia",
                                 emoji: "⭐",
@@ -471,11 +540,32 @@ export default function ProfilePage() {
                                 color: "from-indigo-400 to-purple-400"
                             },
                             {
+                                title: "Perfect Vision",
+                                description: "90%+ accuracy in photo word games",
+                                emoji: "👁️",
+                                unlocked: stats?.photoWordTotalAnswers ? (stats.photoWordCorrectAnswers / stats.photoWordTotalAnswers) >= 0.9 : false,
+                                color: "from-cyan-400 to-blue-400"
+                            },
+                            {
                                 title: "Hebrew Hero",
                                 description: "Reached Level 10",
                                 emoji: "🦸",
                                 unlocked: (stats?.level || 0) >= 10,
                                 color: "from-red-400 to-pink-400"
+                            },
+                            {
+                                title: "Game Master",
+                                description: "Played all 3 game types",
+                                emoji: "🎮",
+                                unlocked: (stats?.triviaGamesPlayed || 0) >= 1 && (stats?.wordMatchGamesPlayed || 0) >= 1 && (stats?.photoWordGamesPlayed || 0) >= 1,
+                                color: "from-emerald-400 to-teal-400"
+                            },
+                            {
+                                title: "Consistency King",
+                                description: "Played 20+ games total",
+                                emoji: "👑",
+                                unlocked: ((stats?.triviaGamesPlayed || 0) + (stats?.wordMatchGamesPlayed || 0) + (stats?.photoWordGamesPlayed || 0)) >= 20,
+                                color: "from-amber-400 to-yellow-400"
                             }
                         ].map((achievement, index) => (
                             <div

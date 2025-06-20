@@ -6,7 +6,7 @@ import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { app } from '../../../firebase';
+import { app } from '@/firebase';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/ThemeContext';
 
@@ -140,7 +140,21 @@ export default function PhotoWordGame() {
   }, [authReady, sessionEnd, isGuest, summary, db, auth]);
 
   if (error) return <div className="p-6 text-red-600">Error: {error}</div>;
-  if (!data || isGuest === null) return <div className="p-6">Loading…</div>;
+  if (!data || isGuest === null) {
+    return (
+        <div className={`min-h-screen flex items-center justify-center
+      ${theme === 'light'
+            ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200'
+            : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}`}>
+          <div className="text-center">
+            <div className="text-6xl mb-4 animate-spin">🌟</div>
+            <div className={`text-xl font-bold ${theme === 'light' ? 'text-purple-800' : 'text-purple-200'}`}>
+              Loading game…
+            </div>
+          </div>
+        </div>
+    );
+  }
 
   // trial end
   if (trialEnd) return (

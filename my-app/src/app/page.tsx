@@ -18,12 +18,28 @@ export default function Home() {
     if (!loading && user) router.replace('/translate')
   }, [loading, user, router])
 
-  if (loading) return null
+// ★ replace the blank/null loader with our star spinner
+  if (loading) {
+    return (
+        <div className={`min-h-screen flex items-center justify-center
+      ${theme === 'light'
+            ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200'
+            : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}`}>
+          <div className="text-center">
+            <div className="text-6xl mb-4 animate-spin">🌟</div>
+            <div className={`text-xl font-bold ${theme === 'light' ? 'text-purple-800' : 'text-purple-200'}`}>
+              Loading…
+            </div>
+          </div>
+        </div>
+    )
+  }
+
   if (user)
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-xl text-purple-700 animate-pulse">Redirecting…</p>
-      </div>
+        <div className="flex items-center justify-center min-h-screen">
+          <p className="text-xl text-purple-700 animate-pulse">Redirecting…</p>
+        </div>
     )
 
   return (

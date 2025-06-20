@@ -117,7 +117,21 @@ export default function WordMatchPage() {
     }
   }, [matchedPairs, wordPairs, feedbackLog, db]);
 
-  if (!hydrated || isLoading) return <div>Loading game...</div>;
+  if (!hydrated || isLoading) {
+    return (
+        <div className={`min-h-screen flex items-center justify-center
+      ${theme === 'light'
+            ? 'bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200'
+            : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}`}>
+          <div className="text-center">
+            <div className="text-6xl mb-4 animate-spin">🌟</div>
+            <div className={`text-xl font-bold ${theme === 'light' ? 'text-purple-800' : 'text-purple-200'}`}>
+              Loading game…
+            </div>
+          </div>
+        </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen flex flex-col items-center justify-center p-10 text-2xl
