@@ -7,6 +7,15 @@ import { useAuth } from '@/lib/useAuth'
 import { useTheme } from '@/lib/ThemeContext'
 import { hasExceededGuestLimit, incrementGuestPlayCount } from '@/utils/guestLimit'
 
+// Move talkingImages outside the component to prevent re-creation on every render
+const talkingImages = [
+    '/ellie_talking0001.png',
+    '/ellie_talking0002.png',
+    '/ellie_talking0003.png',
+    '/ellie_talking0004.png',
+    '/ellie_talking0005.png'
+]
+
 export default function TranslatePage() {
     const { user, loading } = useAuth()
     const { theme } = useTheme()
@@ -18,22 +27,13 @@ export default function TranslatePage() {
     const [isTalking, setIsTalking] = useState(false)
     const [savingWord, setSavingWord] = useState<string | null>(null)
 
-    // Move talkingImages outside of component or use useCallback to memoize
-    const talkingImages = [
-        '/ellie_talking0001.png',
-        '/ellie_talking0002.png',
-        '/ellie_talking0003.png',
-        '/ellie_talking0004.png',
-        '/ellie_talking0005.png'
-    ]
-
     useEffect(() => {
         if (!loading && !user && hasExceededGuestLimit()) {
             setBlocked(true)
         }
     }, [loading, user])
 
-    // Animation effect for talking - fixed dependency array
+    // Fixed animation effect - removed talkingImages from dependency array
     useEffect(() => {
         let interval: NodeJS.Timeout | null = null
         let timeout: NodeJS.Timeout | null = null
@@ -57,7 +57,7 @@ export default function TranslatePage() {
             if (interval) clearInterval(interval)
             if (timeout) clearTimeout(timeout)
         }
-    }, [isTalking, talkingImages]) // Added talkingImages to dependency array
+    }, [isTalking]) // Only depend on isTalking
 
     const handleSubmit = useCallback(async (e: React.FormEvent) => {
         e.preventDefault()
