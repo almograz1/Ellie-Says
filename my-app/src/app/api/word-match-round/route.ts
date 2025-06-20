@@ -12,8 +12,6 @@ function getFallback() {
 // -------------------------------------------------------
 
 export async function GET() {
-  // If you track “already-used” pairs per session, build an exclude list here.
-  const exclude: string[] = [];
 
   const topics = ["kitchen", "animals", "nature", "school", "emotions", "technology", "clothing"];
 const randomTopic = topics[Math.floor(Math.random() * topics.length)];

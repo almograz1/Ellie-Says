@@ -1,8 +1,7 @@
 // src/app/api/save-word/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { getFirestore, collection, addDoc, serverTimestamp, getDocs, query, where } from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
-import { app } from '../../../firebase';
+import { app } from '@/firebase';
 
 export async function POST(req: NextRequest) {
     try {
