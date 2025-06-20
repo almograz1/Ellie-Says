@@ -173,14 +173,19 @@ export default function TriviaGamePage() {
 
   /* loading */
   if (isLoading) return (
-    <div className={
-      `min-h-screen flex items-center justify-center text-xl
+      <div className={
+        `min-h-screen flex items-center justify-center
       ${theme==='light'
-        ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200 text-purple-800'
-        : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900 text-purple-200'}`
-    }>
-      Loading game…
-    </div>
+            ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200'
+            : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}`
+      }>
+        <div className="text-center">
+          <div className="text-6xl mb-4 animate-spin">🌟</div>
+          <div className={`text-xl font-bold ${theme === 'light' ? 'text-purple-800' : 'text-purple-200'}`}>
+            Loading game...
+          </div>
+        </div>
+      </div>
   );
 
   const q = questions[currentIndex];
