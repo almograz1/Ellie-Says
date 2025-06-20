@@ -75,8 +75,8 @@ export default function GamesPage() {
     >
       <Navbar />
 
-      {/* Ellie Character - Always visible on left side */}
-      <div className="fixed left-8 top-1/2 transform -translate-y-1/2 z-40 pointer-events-none hidden lg:block">
+      {/* Ellie Character - Normal positioning, scrolls with page */}
+      <div className="absolute left-8 top-1/2 transform -translate-y-1/2 z-30 pointer-events-none hidden lg:block">
         <div className="relative">
           <img
             src="/ellie0002.png"
@@ -84,9 +84,9 @@ export default function GamesPage() {
             className="w-144 h-144 object-contain drop-shadow-2xl opacity-90"
           />
 
-          {/* Speech bubble */}
+          {/* Speech bubble - moved down more */}
           <div
-            className={`absolute -top-12 -right-16 backdrop-blur-sm rounded-2xl p-4 shadow-lg border-2 max-w-sm transition-all duration-300 ${
+            className={`absolute top-4 -right-16 backdrop-blur-sm rounded-2xl p-4 shadow-lg border-2 max-w-sm transition-all duration-300 ${
               theme === 'light'
                 ? 'bg-white/95 border-purple-200'
                 : 'bg-gray-800/95 border-purple-400'
@@ -155,9 +155,9 @@ export default function GamesPage() {
           </p>
         </div>
 
-        {/* Games grid - centered with proper spacing for left Ellie */}
+        {/* Games grid - aligned with title */}
         <div className="flex justify-center">
-          <div className="max-w-4xl lg:ml-72">
+          <div className="max-w-4xl">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-8">
               {games.map((game) => (
                 <div
@@ -233,8 +233,8 @@ export default function GamesPage() {
           </div>
         </div>
 
-        {/* Mobile Ellie */}
-        <div className="lg:hidden fixed bottom-6 right-6 z-10">
+        {/* Mobile Ellie - also scrolls with page */}
+        <div className="lg:hidden absolute bottom-6 right-6 z-30 pointer-events-none">
           <img
             src="/ellie0002.png"
             alt="Ellie"

@@ -166,8 +166,8 @@ export default function TriviaGamePage() {
         ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200 text-purple-800'
         : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900 text-purple-200'}`
     }>
-      {/* Ellie Character - Always visible on left side */}
-      <div className="fixed left-8 top-1/2 transform -translate-y-1/2 z-40 pointer-events-none">
+      {/* Ellie Character - Normal positioning, scrolls with page */}
+      <div className="absolute left-8 top-1/2 transform -translate-y-1/2 z-40 pointer-events-none">
         <img
           src={showEllie ? (ellieCorrect ? "/ellie0001.png" : "/ellie0003.png") : "/ellie0001.png"}
           alt="Ellie"
