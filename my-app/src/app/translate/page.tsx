@@ -210,302 +210,153 @@ export default function TranslatePage() {
     }
 
     return (
-        <div className={`min-h-screen
+        <div className={`min-h-screen flex items-center justify-center p-6 lg:p-6
             ${theme === 'light'
             ? 'bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200'
             : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}`}
         >
-            {/* Desktop Layout */}
-            <div className="hidden lg:flex items-center justify-center p-6 min-h-screen">
-                <div className="flex items-start justify-center gap-8 max-w-none w-full">
+            <div className="flex items-start justify-center gap-8 max-w-none w-full">
 
-                    {/* Ellie Character - positioned on the left */}
-                    <div className="flex-shrink-0 w-[600px] mt-48 -ml-32">
+                {/* Ellie Character - positioned on the left (desktop only) */}
+                <div className="hidden lg:block flex-shrink-0 w-[600px] mt-48 -ml-32">
+                    <div className="relative">
+                        <Image
+                            src={currentEllieImage}
+                            alt="Ellie the Translator"
+                            width={600}
+                            height={600}
+                            className={`w-[600px] h-auto drop-shadow-2xl transition-transform duration-300 ${
+                                isTalking ? '' : ''
+                            }`}
+                            priority
+                        />
+                        {/* Speech bubble */}
+                        <div className={`absolute -top-6 -right-10 backdrop-blur-sm 
+                            rounded-2xl p-4 shadow-lg border-2 max-w-sm transition-all duration-300 ${
+                            loadingAI ? 'animate-pulse scale-105' : ''
+                        } ${theme === 'light'
+                            ? 'bg-white/95 border-purple-200'
+                            : 'bg-gray-800/95 border-purple-400'}`}
+                        >
+                            <div className={`font-medium text-sm
+                                ${theme === 'light' ? 'text-purple-700' : 'text-purple-300'}`}
+                            >
+                                {history.length === 0
+                                    ? "Hi! I'm Ellie! 👋 Type something in English and I'll translate it to Hebrew with vowels!"
+                                    : loadingAI
+                                        ? "Let me think about that... 🤔✨"
+                                        : "What else would you like to translate? 😊"
+                                }
+                            </div>
+                            {/* Speech bubble tail */}
+                            <div className={`absolute bottom-0 left-10 w-0 h-0 border-l-8 border-r-8
+                                border-t-8 border-l-transparent border-r-transparent transform translate-y-full
+                                ${theme === 'light'
+                                ? 'border-t-white/95'
+                                : 'border-t-gray-800/95'}`}
+                            ></div>
+                        </div>
+
+                        {/* Talking animation sparkles */}
+                        {(loadingAI || isTalking) && (
+                            <>
+                                <div className="absolute top-20 left-16 text-2xl animate-ping">✨</div>
+                                <div className="absolute top-32 right-20 text-xl animate-ping delay-150">🌟</div>
+                                <div className="absolute top-40 left-24 text-lg animate-ping delay-300">💫</div>
+                            </>
+                        )}
+                    </div>
+                </div>
+
+                {/* Main Chat Container */}
+                <div className="flex-1 min-w-0 max-w-4xl">
+                    {/* Header */}
+                    <div className="text-center mb-8">
+                        <h1 className={`text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-3
+                            ${theme === 'light' ? 'text-purple-800' : 'text-purple-200'}`}
+                        >
+                            🌟 Ellie&#39;s Translation Magic 🌟
+                        </h1>
+                        <p className={`text-lg sm:text-xl font-medium
+                            ${theme === 'light' ? 'text-purple-600' : 'text-purple-300'}`}
+                        >
+                            Let&#39;s learn Hebrew together! 🇮🇱✨
+                        </p>
+                    </div>
+
+                    {/* Mobile Ellie - positioned above chat box */}
+                    <div className="lg:hidden flex justify-center mb-6">
                         <div className="relative">
                             <Image
                                 src={currentEllieImage}
                                 alt="Ellie the Translator"
-                                width={600}
-                                height={600}
-                                className={`w-[600px] h-auto drop-shadow-2xl transition-transform duration-300 ${
+                                width={200}
+                                height={200}
+                                className={`w-48 h-auto drop-shadow-lg transition-transform duration-300 ${
                                     isTalking ? '' : ''
                                 }`}
                                 priority
                             />
-                            {/* Speech bubble */}
-                            <div className={`absolute -top-6 -right-10 backdrop-blur-sm 
-                                rounded-2xl p-4 shadow-lg border-2 max-w-sm transition-all duration-300 ${
+                            {/* Mobile speech bubble */}
+                            <div className={`absolute -top-4 -right-2 backdrop-blur-sm 
+                                rounded-xl p-2 shadow-lg border-2 max-w-xs text-xs transition-all duration-300 ${
                                 loadingAI ? 'animate-pulse scale-105' : ''
                             } ${theme === 'light'
                                 ? 'bg-white/95 border-purple-200'
                                 : 'bg-gray-800/95 border-purple-400'}`}
                             >
-                                <div className={`font-medium text-sm
+                                <div className={`font-medium
                                     ${theme === 'light' ? 'text-purple-700' : 'text-purple-300'}`}
                                 >
                                     {history.length === 0
-                                        ? "Hi! I'm Ellie! 👋 Type something in English and I'll translate it to Hebrew with vowels!"
+                                        ? "Hi! I'm Ellie! 👋"
                                         : loadingAI
-                                            ? "Let me think about that... 🤔✨"
-                                            : "What else would you like to translate? 😊"
+                                            ? "Thinking... 🤔✨"
+                                            : "Ready! 😊"
                                     }
                                 </div>
-                                {/* Speech bubble tail */}
-                                <div className={`absolute bottom-0 left-10 w-0 h-0 border-l-8 border-r-8
-                                    border-t-8 border-l-transparent border-r-transparent transform translate-y-full
+                                {/* Mobile speech bubble tail */}
+                                <div className={`absolute bottom-0 left-6 w-0 h-0 border-l-4 border-r-4
+                                    border-t-4 border-l-transparent border-r-transparent transform translate-y-full
                                     ${theme === 'light'
                                     ? 'border-t-white/95'
                                     : 'border-t-gray-800/95'}`}
                                 ></div>
                             </div>
 
-                            {/* Talking animation sparkles */}
+                            {/* Mobile talking animation sparkles */}
                             {(loadingAI || isTalking) && (
                                 <>
-                                    <div className="absolute top-20 left-16 text-2xl animate-ping">✨</div>
-                                    <div className="absolute top-32 right-20 text-xl animate-ping delay-150">🌟</div>
-                                    <div className="absolute top-40 left-24 text-lg animate-ping delay-300">💫</div>
+                                    <div className="absolute top-4 left-4 text-lg animate-ping">✨</div>
+                                    <div className="absolute top-8 right-4 text-sm animate-ping delay-150">🌟</div>
+                                    <div className="absolute top-12 left-8 text-xs animate-ping delay-300">💫</div>
                                 </>
                             )}
                         </div>
                     </div>
 
-                    {/* Main Chat Container */}
-                    <div className="flex-1 min-w-0 max-w-4xl">
-                        {/* Header */}
-                        <div className="text-center mb-8">
-                            <h1 className={`text-5xl font-extrabold mb-3
-                                ${theme === 'light' ? 'text-purple-800' : 'text-purple-200'}`}
-                            >
-                                🌟 Ellie&#39;s Translation Magic 🌟
-                            </h1>
-                            <p className={`text-xl font-medium
-                                ${theme === 'light' ? 'text-purple-600' : 'text-purple-300'}`}
-                            >
-                                Let&#39;s learn Hebrew together! 🇮🇱✨
-                            </p>
-                        </div>
-
-                        {/* Chat Box */}
-                        <div className={`backdrop-blur-md rounded-3xl shadow-2xl border-2 overflow-hidden
-                            ${theme === 'light'
-                            ? 'bg-white/90 border-purple-200'
-                            : 'bg-gray-800/90 border-purple-400'}`}
-                        >
-
-                            {/* Chat Messages */}
-                            <div className={`h-[500px] overflow-auto p-8 space-y-6
-                                ${theme === 'light'
-                                ? 'bg-gradient-to-b from-purple-50/50 to-pink-50/50'
-                                : 'bg-gradient-to-b from-gray-700/50 to-gray-600/50'}`}
-                            >
-
-                                {history.length === 0 && (
-                                    <div className="text-center py-16">
-                                        <div className="text-8xl mb-6">🎭</div>
-                                        <p className={`text-xl font-medium
-                                            ${theme === 'light' ? 'text-purple-600' : 'text-purple-300'}`}
-                                        >
-                                            Start your Hebrew adventure! Type something below.
-                                        </p>
-                                    </div>
-                                )}
-
-                                {history.map((m, i) => {
-                                    const isUser = m.role === 'user'
-                                    const isTranslationPair = !isUser && i > 0 && history[i-1].role === 'user'
-                                    const userMessage = isTranslationPair ? history[i-1].content : ''
-                                    const { english, hebrew } = isTranslationPair ?
-                                        extractTranslationPair(userMessage, m.content) :
-                                        { english: '', hebrew: '' }
-                                    const saveKey = `${english}-${hebrew}`
-
-                                    return (
-                                        <div
-                                            key={i}
-                                            className={`flex ${isUser ? 'justify-start' : 'justify-end'}`}
-                                        >
-                                            <div className={`max-w-md lg:max-w-lg p-5 rounded-2xl shadow-lg ${
-                                                isUser
-                                                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
-                                                    : 'bg-gradient-to-l from-green-400 to-blue-400 text-white'
-                                            }`}>
-                                                <div className="text-sm font-bold mb-2 opacity-90">
-                                                    {isUser ? '👦 You (English)' : '🤖 Ellie (עברית)'}
-                                                </div>
-                                                <div className={`text-base leading-relaxed mb-3 ${
-                                                    isUser ? 'text-left' : 'text-right'
-                                                }`} dir={isUser ? 'ltr' : 'rtl'}>
-                                                    {m.content}
-                                                </div>
-
-                                                {/* Save Button for Hebrew translations */}
-                                                {!isUser && isTranslationPair && (
-                                                    <div className="flex justify-center mt-3">
-                                                        <button
-                                                            onClick={() => saveWord(english, hebrew)}
-                                                            disabled={!user || savingWord === saveKey}
-                                                            className={`px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 ${
-                                                                savingWord === saveKey
-                                                                    ? 'bg-gray-400 cursor-not-allowed'
-                                                                    : 'bg-white/20 hover:bg-white/30 hover:scale-105 active:scale-95'
-                                                            }`}
-                                                            title={user ? 'Save this word to your collection' : 'Sign in to save words'}
-                                                        >
-                                                            {savingWord === saveKey ? (
-                                                                <>
-                                                                    <span className="animate-spin inline-block mr-1">⏳</span>
-                                                                    Saving...
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    💾 Save Word
-                                                                </>
-                                                            )}
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )
-                                })}
-
-                                {loadingAI && (
-                                    <div className="flex justify-end">
-                                        <div className="bg-gradient-to-l from-yellow-400 to-orange-400
-                                            text-white p-5 rounded-2xl shadow-lg animate-pulse">
-                                            <div className="flex items-center space-x-3">
-                                                <div className="animate-bounce">🤖</div>
-                                                <div>Ellie is thinking...</div>
-                                                <div className="flex space-x-1">
-                                                    <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
-                                                    <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-75"></div>
-                                                    <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-150"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Input Form */}
-                            <div className={`p-8 backdrop-blur-sm border-t-2
-                                ${theme === 'light'
-                                ? 'bg-white/80 border-purple-200'
-                                : 'bg-gray-700/80 border-purple-400'}`}
-                            >
-                                <form onSubmit={handleSubmit} className="flex space-x-4">
-                                    <input
-                                        type="text"
-                                        value={input}
-                                        onChange={(e) => setInput(e.target.value)}
-                                        placeholder="Type in English... 🌟"
-                                        className={`flex-1 px-6 py-4 rounded-full border-2 
-                                            focus:border-purple-500 outline-none transition-all duration-200
-                                            text-base font-medium backdrop-blur-sm
-                                            ${theme === 'light'
-                                            ? 'border-purple-300 text-purple-800 placeholder-purple-400 bg-white/90'
-                                            : 'border-purple-400 text-purple-200 placeholder-purple-300 bg-gray-800/90'}`}
-                                        disabled={loadingAI}
-                                    />
-                                    <button
-                                        type="submit"
-                                        disabled={loadingAI || !input.trim()}
-                                        className="px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500
-                                            hover:from-purple-600 hover:to-pink-600 text-white font-bold
-                                            rounded-full shadow-lg transform hover:scale-105
-                                            transition-all duration-200 disabled:opacity-50
-                                            disabled:cursor-not-allowed disabled:transform-none text-lg"
-                                    >
-                                        {loadingAI ? '✨' : '🚀'}
-                                    </button>
-                                </form>
-
-                                {/* Fun stats */}
-                                <div className={`mt-4 text-center text-sm
-                                    ${theme === 'light' ? 'text-purple-600' : 'text-purple-300'}`}
-                                >
-                                    {!user && isClient && (
-                                        <p>
-                                            🎯 Free translations left: {Math.max(0, 3 - guestPlayCount)}
-                                            <span className="mx-2">•</span>
-                                            <span className="text-yellow-600 font-bold">💾 Sign in to save words!</span>
-                                        </p>
-                                    )}
-                                    {user && history.length > 0 && (
-                                        <p>
-                                            🎉 You&#39;ve learned {Math.floor(history.length / 2)} Hebrew phrases today!
-                                            <span className="mx-2">•</span>
-                                            <span className="text-green-600 font-bold">💾 Click &quot;Save Word&quot; to build your collection!</span>
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Mobile Layout */}
-            <div className="lg:hidden min-h-screen flex flex-col">
-                {/* Header */}
-                <div className="text-center pt-8 pb-4 px-4">
-                    <h1 className={`text-3xl font-extrabold mb-2
-                        ${theme === 'light' ? 'text-purple-800' : 'text-purple-200'}`}
-                    >
-                        🌟 Magic 🌟
-                    </h1>
-                    <p className={`text-lg font-medium
-                        ${theme === 'light' ? 'text-purple-600' : 'text-purple-300'}`}
-                    >
-                        Let&#39;s learn Hebrew together! 🇮🇱✨
-                    </p>
-                </div>
-
-                {/* Chat Container - takes remaining space */}
-                <div className="flex-1 flex flex-col px-4 pb-4">
-                    <div className={`backdrop-blur-md rounded-3xl shadow-2xl border-2 overflow-hidden flex-1 flex flex-col
+                    {/* Chat Box */}
+                    <div className={`backdrop-blur-md rounded-3xl shadow-2xl border-2 overflow-hidden
                         ${theme === 'light'
                         ? 'bg-white/90 border-purple-200'
                         : 'bg-gray-800/90 border-purple-400'}`}
                     >
 
-                        {/* Chat Messages - takes remaining space */}
-                        <div className={`flex-1 overflow-auto p-4 space-y-4
+                        {/* Chat Messages */}
+                        <div className={`h-[400px] sm:h-[500px] overflow-auto p-4 sm:p-8 space-y-6
                             ${theme === 'light'
                             ? 'bg-gradient-to-b from-purple-50/50 to-pink-50/50'
                             : 'bg-gradient-to-b from-gray-700/50 to-gray-600/50'}`}
                         >
 
                             {history.length === 0 && (
-                                <div className="text-center py-8">
-                                    <div className="text-6xl mb-4">🎭</div>
-                                    <p className={`text-lg font-medium
+                                <div className="text-center py-8 sm:py-16">
+                                    <div className="text-6xl sm:text-8xl mb-4 sm:mb-6">🎭</div>
+                                    <p className={`text-lg sm:text-xl font-medium
                                         ${theme === 'light' ? 'text-purple-600' : 'text-purple-300'}`}
                                     >
                                         Start your Hebrew adventure! Type something below.
                                     </p>
-
-                                    {/* Mobile Ellie - positioned in empty state */}
-                                    <div className="mt-6 flex justify-center">
-                                        <div className="relative">
-                                            <Image
-                                                src={currentEllieImage}
-                                                alt="Ellie"
-                                                width={200}
-                                                height={200}
-                                                className={`w-48 h-auto drop-shadow-lg transition-transform duration-300 ${
-                                                    isTalking ? '' : ''
-                                                }`}
-                                            />
-                                            {(loadingAI || isTalking) && (
-                                                <>
-                                                    <div className="absolute -top-2 -left-2 text-lg animate-ping">✨</div>
-                                                    <div className="absolute -top-1 -right-1 text-sm animate-ping delay-150">🌟</div>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
                                 </div>
                             )}
 
@@ -523,15 +374,15 @@ export default function TranslatePage() {
                                         key={i}
                                         className={`flex ${isUser ? 'justify-start' : 'justify-end'}`}
                                     >
-                                        <div className={`max-w-xs p-4 rounded-2xl shadow-lg ${
+                                        <div className={`max-w-sm sm:max-w-md lg:max-w-lg p-4 sm:p-5 rounded-2xl shadow-lg ${
                                             isUser
                                                 ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'
                                                 : 'bg-gradient-to-l from-green-400 to-blue-400 text-white'
                                         }`}>
-                                            <div className="text-xs font-bold mb-2 opacity-90">
+                                            <div className="text-xs sm:text-sm font-bold mb-2 opacity-90">
                                                 {isUser ? '👦 You (English)' : '🤖 Ellie (עברית)'}
                                             </div>
-                                            <div className={`text-sm leading-relaxed mb-3 ${
+                                            <div className={`text-sm sm:text-base leading-relaxed mb-3 ${
                                                 isUser ? 'text-left' : 'text-right'
                                             }`} dir={isUser ? 'ltr' : 'rtl'}>
                                                 {m.content}
@@ -543,7 +394,7 @@ export default function TranslatePage() {
                                                     <button
                                                         onClick={() => saveWord(english, hebrew)}
                                                         disabled={!user || savingWord === saveKey}
-                                                        className={`px-3 py-1 rounded-full text-xs font-bold transition-all duration-200 ${
+                                                        className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-all duration-200 ${
                                                             savingWord === saveKey
                                                                 ? 'bg-gray-400 cursor-not-allowed'
                                                                 : 'bg-white/20 hover:bg-white/30 hover:scale-105 active:scale-95'
@@ -571,14 +422,14 @@ export default function TranslatePage() {
                             {loadingAI && (
                                 <div className="flex justify-end">
                                     <div className="bg-gradient-to-l from-yellow-400 to-orange-400
-                                        text-white p-4 rounded-2xl shadow-lg animate-pulse max-w-xs">
-                                        <div className="flex items-center space-x-2">
+                                        text-white p-4 sm:p-5 rounded-2xl shadow-lg animate-pulse">
+                                        <div className="flex items-center space-x-3">
                                             <div className="animate-bounce">🤖</div>
-                                            <div className="text-sm">Ellie is thinking...</div>
+                                            <div className="text-sm sm:text-base">Ellie is thinking...</div>
                                             <div className="flex space-x-1">
-                                                <div className="w-1 h-1 bg-white rounded-full animate-bounce"></div>
-                                                <div className="w-1 h-1 bg-white rounded-full animate-bounce delay-75"></div>
-                                                <div className="w-1 h-1 bg-white rounded-full animate-bounce delay-150"></div>
+                                                <div className="w-2 h-2 bg-white rounded-full animate-bounce"></div>
+                                                <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-75"></div>
+                                                <div className="w-2 h-2 bg-white rounded-full animate-bounce delay-150"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -586,21 +437,21 @@ export default function TranslatePage() {
                             )}
                         </div>
 
-                        {/* Input Form - fixed at bottom */}
-                        <div className={`p-4 backdrop-blur-sm border-t-2 flex-shrink-0
+                        {/* Input Form */}
+                        <div className={`p-4 sm:p-8 backdrop-blur-sm border-t-2
                             ${theme === 'light'
                             ? 'bg-white/80 border-purple-200'
                             : 'bg-gray-700/80 border-purple-400'}`}
                         >
-                            <form onSubmit={handleSubmit} className="flex space-x-3">
+                            <form onSubmit={handleSubmit} className="flex space-x-2 sm:space-x-4">
                                 <input
                                     type="text"
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     placeholder="Type in English... 🌟"
-                                    className={`flex-1 px-4 py-3 rounded-full border-2 
+                                    className={`flex-1 px-4 sm:px-6 py-3 sm:py-4 rounded-full border-2 
                                         focus:border-purple-500 outline-none transition-all duration-200
-                                        text-sm font-medium backdrop-blur-sm
+                                        text-sm sm:text-base font-medium backdrop-blur-sm
                                         ${theme === 'light'
                                         ? 'border-purple-300 text-purple-800 placeholder-purple-400 bg-white/90'
                                         : 'border-purple-400 text-purple-200 placeholder-purple-300 bg-gray-800/90'}`}
@@ -609,31 +460,31 @@ export default function TranslatePage() {
                                 <button
                                     type="submit"
                                     disabled={loadingAI || !input.trim()}
-                                    className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500
+                                    className="px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-purple-500 to-pink-500
                                         hover:from-purple-600 hover:to-pink-600 text-white font-bold
                                         rounded-full shadow-lg transform hover:scale-105
                                         transition-all duration-200 disabled:opacity-50
-                                        disabled:cursor-not-allowed disabled:transform-none text-sm"
+                                        disabled:cursor-not-allowed disabled:transform-none text-base sm:text-lg"
                                 >
                                     {loadingAI ? '✨' : '🚀'}
                                 </button>
                             </form>
 
                             {/* Fun stats */}
-                            <div className={`mt-3 text-center text-xs
+                            <div className={`mt-4 text-center text-xs sm:text-sm
                                 ${theme === 'light' ? 'text-purple-600' : 'text-purple-300'}`}
                             >
                                 {!user && isClient && (
                                     <p>
                                         🎯 Free translations left: {Math.max(0, 3 - guestPlayCount)}
-                                        <br />
+                                        <span className="mx-2">•</span>
                                         <span className="text-yellow-600 font-bold">💾 Sign in to save words!</span>
                                     </p>
                                 )}
                                 {user && history.length > 0 && (
                                     <p>
                                         🎉 You&#39;ve learned {Math.floor(history.length / 2)} Hebrew phrases today!
-                                        <br />
+                                        <span className="mx-2">•</span>
                                         <span className="text-green-600 font-bold">💾 Click &quot;Save Word&quot; to build your collection!</span>
                                     </p>
                                 )}
