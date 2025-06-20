@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenAI, Modality, Part } from '@google/genai';
-import crypto from 'crypto';
-
 /* ------------------------------------------------------------------ */
 /* 40-word bank (kid-friendly nouns) */
 const WORD_BANK = [
@@ -47,7 +45,7 @@ const WORD_BANK = [
 ];
 
 /* remember words already used this session */
-let used = new Set<string>();
+const used = new Set<string>();
 
 /* helpers ------------------------------------------------------------ */
 const ABC = 'אבגדהוזחטייקלמנסעפצקרשת'.split('');
@@ -76,8 +74,9 @@ export async function GET() {
       config: { responseModalities: [Modality.TEXT, Modality.IMAGE] }
     });
     const part = img.candidates?.[0]?.content?.parts?.find(
-      (p: Part) => (p as any).inlineData
-    ) as { inlineData?: { data: string } } | undefined;
+        (p): p is Part & { inlineData: { data: string } } =>
+            'inlineData' in p && !!(p as Part & { inlineData?: { data?: string } }).inlineData?.data
+    );
 
     if (part?.inlineData?.data) {
       imageUrl = `data:image/png;base64,${part.inlineData.data}`;
