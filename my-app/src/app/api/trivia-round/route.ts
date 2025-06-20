@@ -19,7 +19,7 @@ const prompt = `
 Return ONLY raw JSON — no markdown, no text, no triple back-ticks — with this exact shape:
 {
   "hebrewWord": "...",                         // Hebrew noun with nikud
-  "options": ["...", "...", "...", "..."],     // 4 English words
+  "options": ["...", "...", "...", "..."],     // 4 English words(without nikud)
   "correctIndex": 0,                           // 0-3 (index of correct option)
   "clueSentence": "...",                       // Hebrew sentence using the word
   "clueEmoji": "😃"
@@ -28,6 +28,7 @@ Return ONLY raw JSON — no markdown, no text, no triple back-ticks — with thi
 Give a different Hebrew word each time related to this topic: "${randomTopic}".
 Include a sentence that makes sense and an emoji that fits.
 Do NOT reuse words from earlier.
+the english word shouldn't have nikud.
 Prompt freshness: ${Date.now()}
 `.trim();
 

@@ -16,7 +16,7 @@ import { useTheme } from '@/lib/ThemeContext';
 interface TriviaRound {
   hebrewWord: string;
   options: string[];       // 4 English words
-  correctIndex: number;    // 0-3
+  correctIndex: number;    // index in options
   clueSentence: string;
   clueEmoji: string;
 }
@@ -31,6 +31,16 @@ interface AnswerLog {
 /* ---------- helpers ---------- */
 const ROUNDS_FOR_SIGNED = 5;
 const ROUNDS_FOR_GUEST  = 3;
+
+// Fisher-Yates shuffle
+function shuffleArray<T>(array: T[]): T[] {
+  const a = [...array];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 export default function TriviaGamePage() {
   const { theme } = useTheme();
@@ -54,7 +64,7 @@ export default function TriviaGamePage() {
   // wait for Firebase auth to initialize
   const [authReady, setAuthReady] = useState(false);
 
-  /* fetch N fresh rounds */
+  /* fetch N fresh rounds without duplicates, shuffle options */
   const loadRounds = async () => {
     setIsLoading(true);
     const guest = !auth.currentUser;
@@ -62,12 +72,24 @@ export default function TriviaGamePage() {
     const roundsNeeded = guest ? ROUNDS_FOR_GUEST : ROUNDS_FOR_SIGNED;
 
     try {
-      const resArr = await Promise.all(
-        Array.from({ length: roundsNeeded }, () =>
-          fetch('/api/trivia-round').then(r => r.json())
-        )
-      );
-      setQuestions(resArr as TriviaRound[]);
+      const seen = new Set<string>();
+      const fetched: TriviaRound[] = [];
+      while (fetched.length < roundsNeeded) {
+        const res = await fetch('/api/trivia-round');
+        const q = await res.json() as TriviaRound;
+        if (seen.has(q.hebrewWord)) continue;
+        seen.add(q.hebrewWord);
+        // shuffle options and adjust correctIndex
+        const correctAns = q.options[q.correctIndex];
+        const newOptions = shuffleArray(q.options);
+        const newIndex = newOptions.findIndex(o => o === correctAns);
+        fetched.push({
+          ...q,
+          options: newOptions,
+          correctIndex: newIndex
+        });
+      }
+      setQuestions(fetched);
       setCurrentIndex(0);
       setSelected(null);
       setScore(0);
@@ -106,9 +128,13 @@ export default function TriviaGamePage() {
     const isCorrect = option === correct;
     if (isCorrect) setScore(s => s + 1);
 
-    setAnswers(a => [...a, { hebrew: q.hebrewWord, correct, selected: option, result: isCorrect ? 'Correct' : 'Wrong' }]);
+    setAnswers(a => [...a, {
+      hebrew: q.hebrewWord,
+      correct,
+      selected: option,
+      result: isCorrect ? 'Correct' : 'Wrong'
+    }]);
 
-    // Show Ellie with animation
     setEllieCorrect(isCorrect);
     setShowEllie(true);
 
@@ -166,19 +192,20 @@ export default function TriviaGamePage() {
         ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200 text-purple-800'
         : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900 text-purple-200'}`
     }>
-      {/* Ellie Character - Normal positioning, scrolls with page */}
+      {/* Ellie Character */}
       <div className="absolute left-8 top-1/2 transform -translate-y-1/2 z-40 pointer-events-none">
         <img
-          src={showEllie ? (ellieCorrect ? "/ellie0001.png" : "/ellie0003.png") : "/ellie0001.png"}
+          src={showEllie
+            ? (ellieCorrect ? "/ellie0001.png" : "/ellie0003.png")
+            : "/ellie0001.png"}
           alt="Ellie"
           className={`w-144 h-144 object-contain transition-opacity duration-200 ${
             showEllie
-              ? ellieCorrect 
-                ? "animate-[shake-vertical_0.8s_ease-in-out]" 
+              ? ellieCorrect
+                ? "animate-[shake-vertical_0.8s_ease-in-out]"
                 : "animate-[shake-horizontal_0.8s_ease-in-out]"
               : "opacity-80"
-          }`}
-        />
+          }`} />
       </div>
 
       {!showSummary ? (
@@ -186,22 +213,19 @@ export default function TriviaGamePage() {
           `backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center
           ${theme==='light'?'bg-white/90 text-purple-800':'bg-gray-800/90 text-purple-200'}`
         }>
-          <p className="text-lg mb-2">Round {currentIndex+1} / {questions.length}</p>
-          <h1 className="text-4xl font-bold mb-2">What does this word mean?</h1>
-          <h2 className={
-            `text-6xl font-extrabold mb-6
-            ${theme==='light'?'text-purple-700':'text-purple-300'}`
-          } dir="rtl">{q.hebrewWord}</h2>
+          <p className="text-lg mb-2">
+            Round {currentIndex+1} / {questions.length}
+          </p>
+          <h1 className="text-4xl font-bold mb-2">
+            What does this word mean?
+          </h1>
+          <h2 className={`text-6xl font-extrabold mb-6 ${theme==='light'?'text-purple-700':'text-purple-300'}`} dir="rtl">
+            {q.hebrewWord}
+          </h2>
 
           <div className="flex justify-center gap-6 mb-6">
-            <button onClick={()=>setShowSentence(true)} className={
-              `px-6 py-2 rounded shadow text-lg
-              ${theme==='light'?'bg-purple-200 hover:bg-purple-300 text-purple-800':'bg-purple-700 hover:bg-purple-600 text-purple-200'}`
-            }>Show Sentence 📘</button>
-            <button onClick={()=>setShowEmoji(true)} className={
-              `px-6 py-2 rounded shadow text-lg
-              ${theme==='light'?'bg-yellow-100 hover:bg-yellow-200 text-purple-800':'bg-yellow-700 hover:bg-yellow-600 text-yellow-100'}`
-            }>Show Emoji 😃</button>
+            <button onClick={()=>setShowSentence(true)} className={`px-6 py-2 rounded shadow text-lg ${theme==='light'?'bg-purple-200 hover:bg-purple-300 text-purple-800':'bg-purple-700 hover:bg-purple-600 text-purple-200'}`}>Show Sentence 📘</button>
+            <button onClick={()=>setShowEmoji(true)} className={`px-6 py-2 rounded shadow text-lg ${theme==='light'?'bg-yellow-100 hover:bg-yellow-200 text-purple-800':'bg-yellow-700 hover:bg-yellow-600 text-yellow-100'}`}>Show Emoji 😃</button>
           </div>
 
           {showSentence && <p className="mb-4 italic text-lg">{q.clueSentence}</p>}
@@ -224,7 +248,7 @@ export default function TriviaGamePage() {
 
           {selected && (
             <p className="mt-6 text-2xl font-semibold">
-              {selected===q.options[q.correctIndex]?'You\'re Right! ✅':'Oops! That\'s not it ❌'}
+              {selected===q.options[q.correctIndex] ? "You're Right! ✅" : "Oops! That's not it ❌"}
             </p>
           )}
 
@@ -232,49 +256,29 @@ export default function TriviaGamePage() {
         </div>
       ) : (
         isGuest ? (
-          <div className={
-            `backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center
-            ${theme==='light'?'bg-white/90 text-purple-800':'bg-gray-800/90 text-purple-200'}`
-          }>
+          <div className={`backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center ${theme==='light'?'bg-white/90 text-purple-800':'bg-gray-800/90 text-purple-200'}`}>
             <h2 className="text-3xl font-bold mb-6">🎮 Want More Games?</h2>
-            <p className="text-xl mb-6">If you enjoyed this game, sign up for full access to more rounds and all game modes!</p>
+            <p className="text-xl mb-6">If you enjoyed this game, sign up for full access!</p>
             <button onClick={()=>window.location.href='/signin'} className="bg-purple-400 hover:bg-purple-500 text-white px-6 py-3 rounded shadow text-lg">Sign In / Register</button>
           </div>
         ) : (
-          <div className={
-            `backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center
-            ${theme==='light'?'bg-white/90 text-purple-800':'bg-gray-800/90 text-purple-200'}`
-          }>
+          <div className={`backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full max-w-5xl text-center ${theme==='light'?'bg-white/90 text-purple-800':'bg-gray-800/90 text-purple-200'}`}>
             <h2 className="text-4xl font-bold mb-6">🎉 Game Over!</h2>
             <p className="text-2xl mb-6">Your Score: {score} / {questions.length}</p>
             <ul className="text-left text-lg mb-6">
-              {answers.map((a,i)=>(
+              {answers.map((a,i)=> (
                 <li key={i} className="flex items-center gap-2 mb-2">
                   {a.result==='Correct' ? <span className="text-green-500 text-2xl">✅</span> : <span className="text-red-500 text-2xl">❌</span>}
                   <span>You chose {a.selected} - {a.hebrew}</span>
                 </li>
               ))}
             </ul>
-            <button onClick={restart} className={
-              `px-6 py-3 rounded shadow text-lg ${theme==='light'?'bg-purple-300 hover:bg-purple-400 text-white':'bg-purple-600 hover:bg-purple-500 text-white'}`
-            }>New Game</button>
+            <button onClick={restart} className={`px-6 py-3 rounded shadow text-lg ${theme==='light'?'bg-purple-300 hover:bg-purple-400 text-white':'bg-purple-600 hover:bg-purple-500 text-white'}`}>New Game</button>
           </div>
         )
       )}
 
-      <style jsx>{`
-        @keyframes shake-vertical {
-          0%, 100% { transform: translateY(0); }
-          10%, 30%, 50%, 70%, 90% { transform: translateY(-10px); }
-          20%, 40%, 60%, 80% { transform: translateY(10px); }
-        }
-        
-        @keyframes shake-horizontal {
-          0%, 100% { transform: translateX(0); }
-          10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
-          20%, 40%, 60%, 80% { transform: translateX(10px); }
-        }
-      `}</style>
+      <style jsx>{`@keyframes shake-vertical { 0%,100%{transform:translateY(0)}10%,30%,50%,70%,90%{transform:translateY(-10px)}20%,40%,60%,80%{transform:translateY(10px)}}@keyframes shake-horizontal {0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-10px)}20%,40%,60%,80%{transform:translateX(10px)}}`}</style>
     </div>
   );
 }
