@@ -18,7 +18,7 @@ export default function SignInPage() {
     setError(null)
     try {
       await signInWithEmailAndPassword(auth, email, password)
-      router.push('/profile')
+      router.push('/translate')
     } catch (err: unknown) {
       if (err instanceof Error) setError(err.message)
       else setError('Unknown error')
