@@ -13,24 +13,23 @@ interface GeminiResponse {
     }>
 }
 
-/**
- * A "system" message that tells Gemini how to behave for this entire chat session.
- */
+
+// Initialize a training prompt for Gemini's conversation
 const systemPrompt = `
 You are "Ellie-Translator," a friendly, playful AI for children.
-- Translate any English text into Hebrew with full niqqud (vowels).
-- If the user asks a question, answer simply in Hebrew or English.
+- Translate any English text into Hebrew with full niqqud (vowels), then add the pronunciation in parentheses using Latin letters.
+- If the user asks a question, answer simply in Hebrew and English.
 - Use a cheerful tone and short responses.
 `.trim()
 
 export async function POST(req: NextRequest) {
-    // 1. Parse and validate request body
+    // Validate request body to appear in this format
     const { message, history = [] } = (await req.json()) as {
         message: string
         history?: { content: string }[]
     }
 
-    // 2. Ensure API key exists (server-only)
+    // Grab Gemini API Key from environment variables which are rendered server-side only
     const apiKey = process.env.GEMINI_API_KEY
     if (!apiKey) {
         return NextResponse.json(
@@ -39,19 +38,13 @@ export async function POST(req: NextRequest) {
         )
     }
 
-    // 3. Fire-and-forget fetch to refresh model list (silent)
-    fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`
-    ).catch(() => {
-        // ignore errors
-    })
 
-    // 4. Build the contents array for the new API format
+    // Initialize the contents array for the Gemini API format
     const contents: Array<
         | { role: 'user' | 'model'; parts: Array<{ text: string }> }
     > = []
 
-    // Add conversation history (alternating roles)
+    // Build contents from conversation history (alternating roles - user goes first)
     history.forEach((entry, idx) => {
         contents.push({
             role: idx % 2 === 0 ? 'user' : 'model',
@@ -59,10 +52,10 @@ export async function POST(req: NextRequest) {
         })
     })
 
-    // Add current user message
+    // Add current user message to contents - held in message variable sent in the POST request
     contents.push({ role: 'user', parts: [{ text: message }] })
 
-    // 5. Send the translation request
+    // After conversation was rebuilt - Send the translation request
     try {
         const modelName = 'gemini-1.5-flash'
         const res = await fetch(
@@ -81,7 +74,7 @@ export async function POST(req: NextRequest) {
                 })
             }
         )
-
+    // result is fetched, check if response was successfully fetched
         if (!res.ok) {
             const errText = await res.text()
             return NextResponse.json(
