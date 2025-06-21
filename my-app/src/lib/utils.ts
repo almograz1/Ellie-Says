@@ -1,3 +1,5 @@
+// Safely parses a JSON string, removing markdown code block wrappers if present
+// Returns parsed object or null if parsing fails
 export function safeJson<T = unknown>(raw: string): T | null {
   if (!raw) return null;
   // remove ```json … ``` or ``` … ``` wrappers

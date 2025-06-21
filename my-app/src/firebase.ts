@@ -1,3 +1,7 @@
+// Firebase initialization for the app
+// - Loads config from environment variables
+// - Exports Firestore and Auth instances for use throughout the app
+
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";

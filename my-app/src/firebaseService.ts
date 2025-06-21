@@ -1,4 +1,5 @@
-// firebaseService.ts
+// Firebase service functions for user profiles and quiz answers
+// - Provides Firestore helpers for saving and retrieving user data
 
 import { firestore } from './firebase';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';

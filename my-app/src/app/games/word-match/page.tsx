@@ -1,3 +1,10 @@
+// Word Match Game Page
+// - Fetches word pairs from API and shuffles them
+// - Lets users match English and Hebrew words
+// - Tracks correct/incorrect matches and logs feedback
+// - Saves results to Firestore for signed-in users
+// - Handles guest vs. signed-in logic, loading state, and theme
+
 'use client';
 
 import { useEffect, useState } from 'react';

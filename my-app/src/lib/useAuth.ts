@@ -1,3 +1,8 @@
+// React hook for Firebase authentication state
+// - Tracks current user and loading state
+// - Forces sign out if email is not verified
+// - Exposes logout function
+
 'use client'
 import { useState, useEffect } from 'react'
 import {
@@ -32,6 +37,7 @@ export function useAuth() {
         return unsub
     }, [])
 
+    // Logs out the current user
     const logout = () => signOut(auth)
 
     return { user, loading, logout }
