@@ -326,10 +326,9 @@ export default function TriviaGamePage() {
                 isGuest ? (
                     <div className={`backdrop-blur-md rounded-2xl shadow-2xl p-10 w-full text-center ${theme==='light'?'bg-white/90 text-purple-800':'bg-gray-800/90 text-purple-200'}`}>
                       <h2 className="text-3xl font-bold mb-6">🎮 Want More Games?</h2>
-                      <p className="text-xl mb-6">If you enjoyed this game, sign up for full access!</p>
+                      <p className="text-xl mb-6">If you enjoyed this game, sign up for full access to more rounds and all game modes!</p>
                       <div className="flex justify-center gap-4">
                         <button onClick={()=>window.location.href='/signin'} className="bg-purple-400 hover:bg-purple-500 text-white px-6 py-3 rounded shadow text-lg">Sign In / Register</button>
-                        <button onClick={()=>window.location.href='/games'} className={`px-6 py-3 rounded shadow text-lg ${theme==='light'?'bg-gray-200 hover:bg-gray-300 text-gray-800':'bg-gray-600 hover:bg-gray-500 text-white'}`}>Back to Games</button>
                       </div>
                     </div>
                 ) : (
