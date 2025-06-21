@@ -99,7 +99,7 @@ export default function Home() {
         animate={{ opacity: 1 }}
         transition={{ delay: 1.0, duration: 0.5 }}
       >
-        Get started&nbsp;— ite&#39;s free!
+        Get started&nbsp;— it&#39;s free!
       </motion.p>
 
       {/* Menu appears after Ellie lands */}
