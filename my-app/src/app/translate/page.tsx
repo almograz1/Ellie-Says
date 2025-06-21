@@ -112,6 +112,16 @@ export default function TranslatePage() {
         }
     }, [input, blocked, user, history])
 
+    // Helper function to check if a string is a short phrase (1-4 words)
+    const isShortPhrase = (text: string): boolean => {
+        const trimmed = text.trim()
+        // Remove common Hebrew vowel marks (nikud) for word counting
+        const withoutVowels = trimmed.replace(/[\u0591-\u05C7]/g, '')
+        // Split by whitespace and filter out empty strings
+        const words = withoutVowels.split(/\s+/).filter(word => word.length > 0)
+        return words.length >= 1 && words.length <= 4
+    }
+
     const saveWord = async (english: string, hebrew: string) => {
         if (!user) {
             alert('Please sign in to save words! 💾')
@@ -171,6 +181,11 @@ export default function TranslatePage() {
         const english = userContent.trim()
         const hebrew = assistantContent.trim()
         return { english, hebrew }
+    }
+
+    // Helper function to check if both input and output are short phrases (not conversations)
+    const canSaveWord = (userContent: string, assistantContent: string): boolean => {
+        return isShortPhrase(userContent) && isShortPhrase(assistantContent)
     }
 
     if (blocked) {
@@ -368,6 +383,7 @@ export default function TranslatePage() {
                                     extractTranslationPair(userMessage, m.content) :
                                     { english: '', hebrew: '' }
                                 const saveKey = `${english}-${hebrew}`
+                                const canSave = isTranslationPair && canSaveWord(userMessage, m.content)
 
                                 return (
                                     <div
@@ -388,8 +404,8 @@ export default function TranslatePage() {
                                                 {m.content}
                                             </div>
 
-                                            {/* Save Button for Hebrew translations */}
-                                            {!isUser && isTranslationPair && (
+                                            {/* Save Button for Hebrew translations - only show for single words */}
+                                            {!isUser && isTranslationPair && canSave && (
                                                 <div className="flex justify-center mt-3">
                                                     <button
                                                         onClick={() => saveWord(english, hebrew)}
@@ -412,6 +428,15 @@ export default function TranslatePage() {
                                                             </>
                                                         )}
                                                     </button>
+                                                </div>
+                                            )}
+
+                                            {/* Info message when save button is not shown */}
+                                            {!isUser && isTranslationPair && !canSave && (
+                                                <div className="flex justify-center mt-3">
+                                                    <div className="px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm opacity-70 bg-white/10">
+                                                        💡 Only short phrases (1-4 words) can be saved
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>
@@ -483,9 +508,9 @@ export default function TranslatePage() {
                                 )}
                                 {user && history.length > 0 && (
                                     <p>
-                                        🎉 You&#39;ve learned {Math.floor(history.length / 2)} Hebrew phrases today!
+                                        🎉 You&#39;ve learned {Math.floor(history.length / 2)} Hebrew phrases!
                                         <span className="mx-2">•</span>
-                                        <span className="text-green-600 font-bold">💾 Click &quot;Save Word&quot; to build your collection!</span>
+                                        <span className="text-green-600 font-bold">💾 Short phrases (1-4 words) can be saved to your collection!</span>
                                     </p>
                                 )}
                             </div>

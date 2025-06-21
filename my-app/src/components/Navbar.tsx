@@ -1,3 +1,9 @@
+// Navigation bar component
+// - Shows logo, navigation links, theme toggle, and auth actions
+// - Responsive: adapts to desktop and mobile
+// - Hides on the landing page ('/')
+// - Uses theme and auth context for dynamic UI
+
 'use client'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -12,16 +18,19 @@ export default function Navbar() {
   const { theme, toggleTheme } = useTheme()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
+  // Hide navbar on landing page or while loading auth state
   if (!pathname || pathname === '/') return null
   if (loading) return null
 
   const isLoggedIn = !!user
   const hoverAnim = 'transform transition duration-200 ease-out hover:scale-110 hover:animate-pulse hover:opacity-80'
 
+  // Toggle mobile menu open/close
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
   }
 
+  // Close mobile menu (used on navigation)
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false)
   }

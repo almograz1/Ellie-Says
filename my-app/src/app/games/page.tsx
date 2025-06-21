@@ -1,10 +1,15 @@
-// app/games/page.tsx
+// Games hub page
+// - Lists all available games with icons, descriptions, and difficulty
+// - Uses theme context for dynamic styling
+// - Clicking a game navigates to its page
+
 'use client'
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import { useTheme } from '@/lib/ThemeContext'
 
+// GameOption describes the structure for each game in the list
 interface GameOption {
   id: string
   title: string
@@ -44,10 +49,12 @@ const initialGames: GameOption[] = [
 
 export default function GamesPage() {
   const router = useRouter()
+  // Memoize games list
   const games  = useMemo(() => initialGames, [])
   const { theme } = useTheme()
   const [hoveredGame, setHoveredGame] = useState<string | null>(null)
 
+  // Returns color classes for difficulty badge
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case 'Easy':   return theme === 'light'

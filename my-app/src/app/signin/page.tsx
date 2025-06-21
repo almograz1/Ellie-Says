@@ -1,3 +1,9 @@
+// Sign-in page for existing users
+// - Authenticates with Firebase using email and password
+// - Redirects to /translate on success
+// - Shows error messages on failure
+// - Uses theme context for dynamic styling
+
 'use client'
 
 import { useState } from 'react'
@@ -8,17 +14,19 @@ import { auth } from '@/firebase'
 import { useTheme } from '@/lib/ThemeContext'
 
 export default function SignInPage() {
+  // Form state
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
   const { theme } = useTheme()
 
+  // Handles sign-in with Firebase Auth
   const handleSignIn = async () => {
     setError(null)
     try {
       await signInWithEmailAndPassword(auth, email, password)
-      router.push('/profile')
+      router.push('/translate')
     } catch (err: unknown) {
       if (err instanceof Error) setError(err.message)
       else setError('Unknown error')
