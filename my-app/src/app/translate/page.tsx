@@ -17,9 +17,10 @@ const talkingImages = [
 ]
 
 export default function TranslatePage() {
+    // Functional variables (hooks)
     const { user, loading } = useAuth()
     const { theme } = useTheme()
-    const [history, setHistory] = useState<{ role: string; content: string }[]>([])
+    const [history, setHistory] = useState<{ role: string; content: string }[]>([]) // setHistory used for handleSubmit or for fetch Gemini response
     const [input, setInput] = useState('')
     const [loadingAI, setLoadingAI] = useState(false)
     const [blocked, setBlocked] = useState(false)
