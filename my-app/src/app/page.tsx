@@ -1,3 +1,12 @@
+// Main landing page for Ellie Says
+//
+// - If the user is authenticated, they are redirected to /translate.
+// - If the app is loading authentication state, a spinner is shown.
+// - Otherwise, a welcoming animated UI is displayed with options to sign in/register, play games, or translate.
+// - Uses framer-motion for entrance animations and theme context for dynamic styling.
+//
+// The menu appears after the Ellie character animation completes.
+
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -9,16 +18,20 @@ import { useAuth } from '@/lib/useAuth'
 import { useTheme } from '@/lib/ThemeContext'
 
 export default function Home() {
+  // Controls when the main menu appears (after animation)
   const [showMenu, setShowMenu] = useState(false)
+  // Auth state: user and loading
   const { user, loading } = useAuth()
   const router = useRouter()
+  // Theme (light/dark)
   const { theme } = useTheme()
 
+  // Redirect authenticated users to /translate
   useEffect(() => {
     if (!loading && user) router.replace('/translate')
   }, [loading, user, router])
 
-// ★ replace the blank/null loader with our star spinner
+  // Show a spinner while loading auth state
   if (loading) {
     return (
         <div className={`min-h-screen flex items-center justify-center
@@ -35,6 +48,7 @@ export default function Home() {
     )
   }
 
+  // If already signed in, show a redirecting message
   if (user)
     return (
         <div className="flex items-center justify-center min-h-screen">
@@ -42,6 +56,7 @@ export default function Home() {
         </div>
     )
 
+  // Main landing UI for new/unauthenticated users
   return (
     <div
       className={`
@@ -51,7 +66,7 @@ export default function Home() {
           : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900 text-purple-200'}
       `}
     >
-      {/* Ellie entrance */}
+      {/* Animated entrance for Ellie character */}
       <motion.div
         className="mt-16"
         initial={{ y: 300, opacity: 0 }}
@@ -112,6 +127,7 @@ export default function Home() {
             exit={{ opacity: 0, y: 20 }}
             transition={{ delay: 0.2, duration: 0.6 }}
           >
+            {/* Navigation buttons for sign in/register, games, and translate */}
             <Link
               href="/signin"
               className="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-4 rounded-lg text-center shadow transition"

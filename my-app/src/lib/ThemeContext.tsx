@@ -1,5 +1,11 @@
+// Theme context for light/dark mode
+// - Provides theme state and toggle function
+// - Persists theme in localStorage
+// - Updates CSS variables on <html> for background/foreground
+
 import React, { createContext, useContext, useState, useEffect } from 'react'
 
+// Theme type: 'light' or 'dark'
 type Theme = 'light' | 'dark'
 
 interface ThemeContextValue {
@@ -32,6 +38,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [theme])
 
+  // Toggle between light and dark mode
   function toggleTheme() {
     setTheme(t => (t === 'light' ? 'dark' : 'light'))
   }
@@ -43,6 +50,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
+// Hook to access theme context
 export function useTheme() {
   const ctx = useContext(ThemeContext)
   if (!ctx) throw new Error('useTheme must be used within ThemeProvider')

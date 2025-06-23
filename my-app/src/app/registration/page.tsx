@@ -1,3 +1,10 @@
+// Registration page for new users
+// - Collects display name, email, and password
+// - Uses a simple CAPTCHA for bot prevention
+// - Registers user with Firebase Auth and Firestore
+// - Sends email verification and signs out after registration
+// - Uses theme context for dynamic styling
+
 'use client'
 
 import { useState, useEffect } from 'react'
@@ -12,16 +19,19 @@ import { registerUser, UserProfile } from '@/firebaseService'
 import { useTheme } from '@/lib/ThemeContext'
 
 export default function RegistrationPage() {
+  // Form state
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
+  // CAPTCHA state
   const [captchaValue, setCaptchaValue] = useState('')
   const [captchaInput, setCaptchaInput] = useState('')
   const [captchaError, setCaptchaError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
   const { theme } = useTheme()
 
+  // Generates a new random 5-digit CAPTCHA
   const generateCaptcha = () => {
     const random = Math.floor(10000 + Math.random() * 90000).toString()
     setCaptchaValue(random)
@@ -29,14 +39,17 @@ export default function RegistrationPage() {
     setCaptchaError(null)
   }
 
+  // Generate CAPTCHA on mount
   useEffect(() => {
     generateCaptcha()
   }, [])
 
+  // Handles registration and user creation
   const handleRegister = async () => {
     setError(null)
     setCaptchaError(null)
 
+    // CAPTCHA validation
     if (captchaInput !== captchaValue) {
       setCaptchaError('Incorrect CAPTCHA, please try again.')
       generateCaptcha()
@@ -45,9 +58,10 @@ export default function RegistrationPage() {
 
     try {
       const { user } = await createUserWithEmailAndPassword(auth, email, password)
-            await updateProfile(user, {displayName})
+      await updateProfile(user, {displayName})
       await sendEmailVerification(user)
 
+      // Create user profile in Firestore
       const profile: UserProfile = {
         userId: user.uid,
         displayName,
@@ -57,7 +71,7 @@ export default function RegistrationPage() {
       }
 
       await registerUser(profile)
-      await signOut(auth)
+      await signOut(auth) // Sign out to enforce email verification
       setPending(true)
     } catch (err: unknown) {
       if (err instanceof Error) {

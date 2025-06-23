@@ -1,3 +1,10 @@
+// Trivia Game Page
+// - Fetches trivia rounds from API and shuffles options
+// - Lets users answer multiple-choice questions about Hebrew words
+// - Tracks score, answer log, and feedback animations
+// - Saves results to Firestore for signed-in users
+// - Handles guest vs. signed-in logic, loading state, and theme
+
 // src/app/games/TriviaGame/page.tsx
 'use client';
 
