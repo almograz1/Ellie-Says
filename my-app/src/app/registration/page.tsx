@@ -82,8 +82,9 @@ export default function RegistrationPage() {
 
       await registerUser(profile)
       window.location.href = '/translate'
-    } catch (err) {
-      setError('Google sign-in failed')
+    }  catch (err) {
+      console.error(err) 
+      setError('Google sign-up failed')
     }
   }
 
