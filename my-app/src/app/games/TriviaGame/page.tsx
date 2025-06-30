@@ -206,7 +206,7 @@ export default function TriviaGamePage() {
             <div className="flex justify-center gap-6 mb-6">
               <button
                 onClick={() => setShowSentence(true)}
-                className="px-6 py-2 rounded shadow bg-purple-200 hover:bg-purple-300 text-purple-800"
+                className="px-6 py-2 rounded shadow bg-purple-200 hover:bg-purple-300 text-black-800"
               >
                 Show Sentence 📘
               </button>
@@ -236,7 +236,7 @@ export default function TriviaGamePage() {
                         : opt === selected
                           ? 'bg-red-300 text-red-800'
                           : 'bg-white dark:bg-gray-700 text-purple-800 dark:text-purple-200'
-                      : 'bg-white hover:bg-purple-100 dark:bg-gray-700 hover:bg-gray-600 text-purple-800 dark:text-purple-200'
+                      : 'bg-white hover:bg-purple-100 dark:bg-gray-700 hover:bg-gray-600 text-purple-800 dark:text-black-200'
                   }`}
                 >
                   {opt}
