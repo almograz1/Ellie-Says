@@ -29,7 +29,7 @@ interface AnswerLog {
 }
 
 const ROUNDS_FOR_SIGNED = 5;
-const ROUNDS_FOR_GUEST = 3;
+const ROUNDS_FOR_GUEST  = 3;
 
 /* ---------- shuffle helper ---------- */
 function shuffleArray<T>(array: T[]): T[] {
@@ -44,33 +44,35 @@ function shuffleArray<T>(array: T[]): T[] {
 export default function TriviaGamePage() {
   const { theme } = useTheme();
   const auth = getAuth(app);
-  const db = getFirestore(app);
+  const db   = getFirestore(app);
 
-  const [questions, setQuestions] = useState<TriviaRound[]>([]);
+  const [questions,    setQuestions]    = useState<TriviaRound[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selected, setSelected] = useState<string | null>(null);
-  const [score, setScore] = useState(0);
-  const [answers, setAnswers] = useState<AnswerLog[]>([]);
+  const [selected,     setSelected]     = useState<string|null>(null);
+  const [score,        setScore]        = useState(0);
+  const [answers,      setAnswers]      = useState<AnswerLog[]>([]);
   const [showSentence, setShowSentence] = useState(false);
-  const [showEmoji, setShowEmoji] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isGuest, setIsGuest] = useState(false);
-  const [showSummary, setShowSummary] = useState(false);
-  const [showEllie, setShowEllie] = useState(false);
+  const [showEmoji,    setShowEmoji]    = useState(false);
+  const [isLoading,    setIsLoading]    = useState(true);
+  const [isGuest,      setIsGuest]      = useState(false);
+  const [showSummary,  setShowSummary]  = useState(false);
+  const [showEllie,    setShowEllie]    = useState(false);
   const [ellieCorrect, setEllieCorrect] = useState(false);
-  const [authReady, setAuthReady] = useState(false);
+  const [authReady,    setAuthReady]    = useState(false);
 
-  // wait for Firebase auth
+  // initialize auth listener
   useEffect(() => {
-    return onAuthStateChanged(auth, () => setAuthReady(true));
+    return onAuthStateChanged(auth, user => {
+      setIsGuest(!user);
+      setAuthReady(true);
+    });
   }, [auth]);
 
-  // load rounds once auth ready
+  // load questions once auth is ready
   useEffect(() => {
     if (authReady) loadRounds();
   }, [authReady]);
 
-  // fetch and prepare question rounds
   const loadRounds = async () => {
     setIsLoading(true);
     const guest = !auth.currentUser;
@@ -82,13 +84,13 @@ export default function TriviaGamePage() {
       const fetched: TriviaRound[] = [];
       while (fetched.length < needed) {
         const res = await fetch('/api/trivia-round');
-        const q = (await res.json()) as TriviaRound;
+        const q   = await res.json() as TriviaRound;
         if (seen.has(q.hebrewWord)) continue;
         seen.add(q.hebrewWord);
 
         const correctAns = q.options[q.correctIndex];
         const opts = shuffleArray(q.options);
-        const idx = opts.findIndex(o => o === correctAns);
+        const idx  = opts.findIndex(o => o === correctAns);
         fetched.push({ ...q, options: opts, correctIndex: idx });
       }
 
@@ -108,25 +110,22 @@ export default function TriviaGamePage() {
     }
   };
 
-  // handle an answer tap
   const handleSelect = (choice: string) => {
     if (selected) return;
 
-    const q = questions[currentIndex];
-    const correct = q.options[q.correctIndex];
+    const q         = questions[currentIndex];
+    const correct   = q.options[q.correctIndex];
     const isCorrect = choice === correct;
     if (isCorrect) setScore(s => s + 1);
 
-    // build the new answer log
-    const newEntry: AnswerLog = {
-      hebrew: q.hebrewWord,
+    // build new entry and update answers
+    const entry = {
+      hebrew:   q.hebrewWord,
       correct,
       selected: choice,
-      result: isCorrect ? 'Correct' : 'Wrong'
+      result:   isCorrect ? 'Correct' : 'Wrong'
     };
-    // **append** to answers array
-    const updated = [...answers, newEntry];
-    setAnswers(updated);
+    setAnswers(prev => [...prev, entry]);
 
     setSelected(choice);
     setEllieCorrect(isCorrect);
@@ -134,16 +133,9 @@ export default function TriviaGamePage() {
 
     setTimeout(() => {
       setShowEllie(false);
-
-      // if that was the last question
       if (currentIndex + 1 >= questions.length) {
         setShowSummary(true);
-        // save **all** answers including this one
-        if (!isGuest) {
-          saveResults(score + (isCorrect ? 1 : 0), updated);
-        }
       } else {
-        // move to next round
         setCurrentIndex(i => i + 1);
         setSelected(null);
         setShowSentence(false);
@@ -152,142 +144,151 @@ export default function TriviaGamePage() {
     }, 1200);
   };
 
-  // now accepts both score and full answer log
-  const saveResults = async (finalScore: number, answerLog: AnswerLog[]) => {
-    const user = auth.currentUser;
-    if (!user) return;
-    try {
-      await addDoc(collection(db, 'trivia_results'), {
-        uid: user.uid,
-        score: finalScore,
-        answers: answerLog,
-        createdAt: serverTimestamp()
-      });
-      console.log('✅ Saved all answers');
-    } catch (e) {
-      console.error('❌ Error saving summary:', e);
-    }
-  };
+  // save full answers once summary is shown
+  useEffect(() => {
+    if (!showSummary || isGuest || !auth.currentUser) return;
+
+    const save = async () => {
+      try {
+        await addDoc(collection(db, 'trivia_results'), {
+          uid:       auth.currentUser!.uid,
+          score,
+          answers,                // uses state which now has all 5 entries
+          createdAt: serverTimestamp()
+        });
+        console.log('✅ Saved all 5 answers');
+      } catch (e) {
+        console.error('❌ Error saving summary:', e);
+      }
+    };
+    save();
+  }, [showSummary, isGuest, auth.currentUser, score, answers, db]);
 
   const restart = () => loadRounds();
 
   if (isLoading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${
-        theme==='light'
+        theme === 'light'
           ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200'
           : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'
       }`}>
         <div className="text-center">
           <div className="text-6xl animate-spin mb-4">🌟</div>
           <div className={`text-xl font-bold ${
-            theme==='light'?'text-purple-800':'text-purple-200'
+            theme === 'light' ? 'text-purple-800' : 'text-purple-200'
           }`}>Loading game...</div>
         </div>
       </div>
     );
   }
 
-  const q = questions[currentIndex];
+  const current = questions[currentIndex];
 
   return (
     <div className={`min-h-screen flex items-center justify-center p-6 ${
-      theme==='light'
+      theme === 'light'
         ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200'
         : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'
     }`}>
-      <div className="max-w-4xl w-full backdrop-blur-md bg-white/90 dark:bg-gray-800/90 text-center rounded-2xl shadow-2xl p-10">
+      <div className="max-w-4xl w-full backdrop-blur-md bg-white/90 dark:bg-gray-800/90 rounded-2xl shadow-2xl p-10 text-center">
         {!showSummary ? (
           <>
             <p className="text-lg mb-2">
-              Round {currentIndex+1} / {questions.length}
+              Round {currentIndex + 1} / {questions.length}
             </p>
             <h1 className="text-4xl font-bold mb-2">What does this word mean?</h1>
             <h2 className="text-6xl font-extrabold mb-6 text-purple-700 dark:text-purple-300" dir="rtl">
-              {q.hebrewWord}
+              {current.hebrewWord}
             </h2>
-
             <div className="flex justify-center gap-6 mb-6">
               <button
-                onClick={()=>setShowSentence(true)}
+                onClick={() => setShowSentence(true)}
                 className="px-6 py-2 rounded shadow bg-purple-200 hover:bg-purple-300 text-purple-800"
-              >Show Sentence 📘</button>
+              >
+                Show Sentence 📘
+              </button>
               <button
-                onClick={()=>setShowEmoji(true)}
+                onClick={() => setShowEmoji(true)}
                 className="px-6 py-2 rounded shadow bg-yellow-100 hover:bg-yellow-200 text-purple-800"
-              >Show Emoji 😃</button>
+              >
+                Show Emoji 😃
+              </button>
             </div>
-
-            {showSentence && <p className="mb-4 italic text-lg">{q.clueSentence}</p>}
-            {showEmoji    && <p className="text-4xl mb-6">{q.clueEmoji}</p>}
-
+            {showSentence && <p className="mb-4 italic text-lg">{current.clueSentence}</p>}
+            {showEmoji    && <p className="text-4xl mb-6">{current.clueEmoji}</p>}
             <div className="grid grid-cols-2 gap-6">
-              {q.options.map(opt => (
+              {current.options.map(opt => (
                 <button
                   key={opt}
-                  onClick={()=>handleSelect(opt)}
+                  onClick={() => handleSelect(opt)}
                   className={`w-full py-4 rounded-lg shadow-md text-2xl transition-all ${
                     selected
-                      ? opt===q.options[q.correctIndex]
+                      ? opt === current.options[current.correctIndex]
                         ? 'bg-green-300 text-green-800'
-                        : opt===selected
+                        : opt === selected
                           ? 'bg-red-300 text-red-800'
                           : 'bg-white dark:bg-gray-700 text-purple-800 dark:text-purple-200'
                       : 'bg-white hover:bg-purple-100 dark:bg-gray-700 hover:bg-gray-600 text-purple-800 dark:text-purple-200'
                   }`}
-                >{opt}</button>
+                >
+                  {opt}
+                </button>
               ))}
             </div>
-
             {selected && (
               <p className="mt-6 text-2xl font-semibold">
-                {selected===q.options[q.correctIndex] ? "You're Right! ✅" : "Oops! That's not it ❌"}
+                {selected === current.options[current.correctIndex]
+                  ? "You're Right! ✅"
+                  : "Oops! That's not it ❌"}
               </p>
             )}
             <p className="mt-4 text-base">Score: {score}</p>
           </>
+        ) : isGuest ? (
+          <div>
+            <h2 className="text-3xl font-bold mb-6">🎮 Want More Games?</h2>
+            <p className="text-xl mb-6">
+              If you enjoyed this game, sign up for full access to more rounds!
+            </p>
+            <button
+              onClick={() => window.location.href = '/signin'}
+              className="bg-purple-400 hover:bg-purple-500 text-white px-6 py-3 rounded shadow text-lg"
+            >
+              Sign In / Register
+            </button>
+          </div>
         ) : (
-          isGuest
-            ? (
-              <div>
-                <h2 className="text-3xl font-bold mb-6">🎮 Want More Games?</h2>
-                <p className="text-xl mb-6">
-                  If you enjoyed this game, sign up for full access to more rounds!
-                </p>
-                <button
-                  onClick={()=>window.location.href='/signin'}
-                  className="bg-purple-400 hover:bg-purple-500 text-white px-6 py-3 rounded shadow text-lg"
-                >Sign In / Register</button>
-              </div>
-            )
-            : (
-              <div>
-                <h2 className="text-4xl font-bold mb-6">🎉 Game Over!</h2>
-                <p className="text-2xl mb-6">
-                  Your Score: {score} / {questions.length}
-                </p>
-                <ul className="text-left text-lg mb-6">
-                  {answers.map((a,i)=>(
-                    <li key={i} className="flex items-center gap-2 mb-2">
-                      {a.result==='Correct'
-                        ? <span className="text-green-500 text-2xl">✅</span>
-                        : <span className="text-red-500 text-2xl">❌</span>}
-                      <span>You chose {a.selected} – {a.hebrew}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="flex gap-4 justify-center">
-                  <button
-                    onClick={restart}
-                    className="bg-purple-300 hover:bg-purple-400 text-white px-6 py-3 rounded shadow"
-                  >Play Again</button>
-                  <button
-                    onClick={()=>window.location.href='/games'}
-                    className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded shadow"
-                  >Back to Games</button>
-                </div>
-              </div>
-            )
+          <div>
+            <h2 className="text-4xl font-bold mb-6">🎉 Game Over!</h2>
+            <p className="text-2xl mb-6">
+              Your Score: {score} / {questions.length}
+            </p>
+            <ul className="text-left text-lg mb-6">
+              {answers.map((a, i) => (
+                <li key={i} className="flex items-center gap-2 mb-2">
+                  {a.result === 'Correct'
+                    ? <span className="text-green-500 text-2xl">✅</span>
+                    : <span className="text-red-500 text-2xl">❌</span>}
+                  <span>You chose {a.selected} – {a.hebrew}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={restart}
+                className="bg-purple-300 hover:bg-purple-400 text-white px-6 py-3 rounded shadow"
+              >
+                Play Again
+              </button>
+              <button
+                onClick={() => window.location.href = '/games'}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded shadow"
+              >
+                Back to Games
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>
