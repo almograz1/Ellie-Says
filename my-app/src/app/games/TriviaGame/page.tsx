@@ -58,7 +58,7 @@ export default function TriviaGamePage() {
   const [ellieCorrect, setEllieCorrect] = useState(false);
   const [authReady,    setAuthReady]    = useState(false);
 
-  // 1. Listen for auth
+  // 1. Auth listener
   useEffect(() => {
     return onAuthStateChanged(auth, user => {
       setIsGuest(!user);
@@ -66,7 +66,7 @@ export default function TriviaGamePage() {
     });
   }, [auth]);
 
-  // 2. Load questions when auth ready
+  // 2. Load rounds when auth is ready
   useEffect(() => {
     if (authReady) loadRounds();
   }, [authReady]);
@@ -75,12 +75,12 @@ export default function TriviaGamePage() {
     setIsLoading(true);
     const guest = !auth.currentUser;
     setIsGuest(guest);
-    const needed = guest ? ROUNDS_FOR_GUEST : ROUNDS_FOR_SIGNED;
+    const rounds = guest ? ROUNDS_FOR_GUEST : ROUNDS_FOR_SIGNED;
 
     try {
       const seen = new Set<string>();
       const fetched: TriviaRound[] = [];
-      while (fetched.length < needed) {
+      while (fetched.length < rounds) {
         const res = await fetch('/api/trivia-round');
         const q   = (await res.json()) as TriviaRound;
         if (seen.has(q.hebrewWord)) continue;
@@ -92,6 +92,7 @@ export default function TriviaGamePage() {
         fetched.push({ ...q, options: opts, correctIndex: idx });
       }
       setQuestions(fetched);
+      // reset all game state
       setCurrentIndex(0);
       setSelected(null);
       setScore(0);
@@ -107,7 +108,7 @@ export default function TriviaGamePage() {
     }
   }
 
-  // 3. Handle selecting an answer
+  // 3. User picks an answer
   const handleSelect = (choice: string) => {
     if (selected) return;
     const q         = questions[currentIndex];
@@ -116,13 +117,12 @@ export default function TriviaGamePage() {
     if (isCorrect) setScore(s => s + 1);
 
     const entry: AnswerLog = {
-      hebrew: q.hebrewWord,
+      hebrew:   q.hebrewWord,
       correct,
       selected: choice,
-      result: isCorrect ? 'Correct' : 'Wrong'
+      result:   isCorrect ? 'Correct' : 'Wrong'
     };
 
-    // append to answers
     setAnswers(prev => [...prev, entry]);
     setSelected(choice);
     setEllieCorrect(isCorrect);
@@ -141,25 +141,42 @@ export default function TriviaGamePage() {
     }, 1200);
   };
 
-  // 4. Once summary is visible, save the FULL answers array
+  // 4. Save once we've shown the summary *and* have all answers
   useEffect(() => {
-    if (!authReady || !showSummary || isGuest || !auth.currentUser) return;
+    if (
+      !authReady ||
+      !showSummary ||
+      isGuest ||
+      !auth.currentUser ||
+      answers.length !== questions.length
+    ) {
+      return;
+    }
 
-    const uid = auth.currentUser.uid;
     const payload = {
-      uid,
+      uid:       auth.currentUser.uid,
       score,
-      answers,            // <-- now has all 5 entries
+      answers,               // now guaranteed length === rounds
       createdAt: serverTimestamp()
     };
 
     addDoc(collection(db, 'trivia_results'), payload)
       .then(docRef => console.log('✅ Saved summary', docRef.id))
       .catch(err => console.error('❌ Error saving summary:', err));
-  }, [authReady, showSummary, isGuest, auth.currentUser, score, answers, db]);
+  }, [
+    authReady,
+    showSummary,
+    isGuest,
+    auth.currentUser,
+    score,
+    answers,
+    questions.length,
+    db
+  ]);
 
   const restart = () => loadRounds();
 
+  // 5. Loading state
   if (isLoading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${
@@ -179,7 +196,7 @@ export default function TriviaGamePage() {
 
   const q = questions[currentIndex];
 
-  // 5. Render game / summary
+  // 6. Render game or summary
   return (
     <div className={`min-h-screen flex items-center justify-center p-6 ${
       theme==='light'
@@ -196,7 +213,6 @@ export default function TriviaGamePage() {
             <h2 className="text-6xl font-extrabold mb-6 text-purple-700 dark:text-purple-300" dir="rtl">
               {q.hebrewWord}
             </h2>
-
             <div className="flex justify-center gap-6 mb-6">
               <button onClick={()=>setShowSentence(true)}
                 className="px-6 py-2 rounded shadow bg-purple-200 hover:bg-purple-300 text-purple-800">
@@ -209,7 +225,6 @@ export default function TriviaGamePage() {
             </div>
             {showSentence && <p className="mb-4 italic text-lg">{q.clueSentence}</p>}
             {showEmoji    && <p className="text-4xl mb-6">{q.clueEmoji}</p>}
-
             <div className="grid grid-cols-2 gap-6">
               {q.options.map(opt => (
                 <button key={opt} onClick={()=>handleSelect(opt)}
@@ -247,7 +262,7 @@ export default function TriviaGamePage() {
             <h2 className="text-4xl font-bold mb-6">🎉 Game Over!</h2>
             <p className="text-2xl mb-6">Your Score: {score} / {questions.length}</p>
             <ul className="text-left text-lg mb-6">
-              {answers.map((a,i) => (
+              {answers.map((a,i)=>(
                 <li key={i} className="flex items-center gap-2 mb-2">
                   {a.result==='Correct'
                     ? <span className="text-green-500 text-2xl">✅</span>
