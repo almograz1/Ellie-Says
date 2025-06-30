@@ -177,8 +177,8 @@ export default function TriviaGamePage() {
   return (
     <div className={`min-h-screen flex items-center justify-center p-6 ${
       theme === 'light'
-        ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200'
-        : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'
+        ? 'bg-white/90 text-gray-800' 
+      : 'bg-gray-800/90 text-gray-200'
     }`}>
       <div
         className="max-w-4xl w-full backdrop-blur-md rounded-2xl shadow-2xl p-10 text-center"
