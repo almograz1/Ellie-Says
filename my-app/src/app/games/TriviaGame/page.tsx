@@ -58,7 +58,7 @@ export default function TriviaGamePage() {
   const [ellieCorrect, setEllieCorrect] = useState(false);
   const [authReady,    setAuthReady]    = useState(false);
 
-  // 1. Listen for auth state
+  // 1. Auth listener
   useEffect(() => {
     return onAuthStateChanged(auth, user => {
       setIsGuest(!user);
@@ -66,7 +66,7 @@ export default function TriviaGamePage() {
     });
   }, [auth]);
 
-  // 2. Load rounds once auth is ready
+  // 2. Load rounds when auth is ready
   useEffect(() => {
     if (authReady) loadRounds();
   }, [authReady]);
@@ -107,7 +107,7 @@ export default function TriviaGamePage() {
     }
   }
 
-  // 3. Handle selection
+  // 3. Handle answer selection
   const handleSelect = (choice: string) => {
     if (selected) return;
     const q         = questions[currentIndex];
@@ -129,72 +129,55 @@ export default function TriviaGamePage() {
 
     setTimeout(() => {
       setShowEllie(false);
-      if (currentIndex + 1 >= questions.length) {
-        setShowSummary(true);
-      } else {
+      if (currentIndex + 1 < questions.length) {
         setCurrentIndex(i => i + 1);
         setSelected(null);
         setShowSentence(false);
         setShowEmoji(false);
       }
+      // otherwise, let the save useEffect trigger
     }, 1200);
   };
 
-  // 4. Save all answers when summary shows and array is complete
+  // 4. Save once all answers are collected
   useEffect(() => {
     if (
-      !authReady ||
-      !showSummary ||
-      isGuest ||
-      !auth.currentUser ||
-      answers.length !== questions.length
+      authReady &&
+      !isGuest &&
+      auth.currentUser &&
+      questions.length > 0 &&
+      answers.length === questions.length
     ) {
-      return;
+      setShowSummary(true);
+      const uid       = auth.currentUser.uid;
+      const dbAnswers = answers.map(a => ({
+        hebrew:   a.hebrew,
+        correct:  a.correct,
+        selected: a.selected,
+        result:   a.result
+      }));
+      addDoc(
+        collection(db, 'trivia_results'),
+        { uid, score, answers: dbAnswers, createdAt: serverTimestamp() }
+      )
+      .then(docRef => console.log('✅ Saved trivia results:', docRef.id))
+      .catch(err => console.error('❌ Error saving trivia results:', err));
     }
-
-    const uid = auth.currentUser.uid;
-    const dbAnswers = answers.map(a => ({
-      hebrew:   a.hebrew,
-      correct:  a.correct,
-      selected: a.selected,
-      result:   a.result
-    }));
-
-    addDoc(
-      collection(db, 'trivia_results'),
-      {
-        uid,
-        score,
-        answers: dbAnswers,
-        createdAt: serverTimestamp()
-      }
-    )
-    .then(docRef => console.log('✅ Saved trivia results:', docRef.id))
-    .catch(err => console.error('❌ Error saving trivia results:', err));
-  }, [
-    authReady,
-    showSummary,
-    isGuest,
-    auth.currentUser,
-    answers,
-    questions.length,
-    score,
-    db
-  ]);
+  }, [answers, questions.length, authReady, isGuest, auth.currentUser, score, db]);
 
   const restart = () => loadRounds();
 
   if (isLoading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${
-        theme === 'light'
+        theme==='light'
           ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200'
           : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'
       }`}>
         <div className="text-center">
           <div className="text-6xl animate-spin mb-4">🌟</div>
           <div className={`text-xl font-bold ${
-            theme === 'light' ? 'text-purple-800' : 'text-purple-200'
+            theme==='light'?'text-purple-800':'text-purple-200'
           }`}>Loading game...</div>
         </div>
       </div>
@@ -205,7 +188,7 @@ export default function TriviaGamePage() {
 
   return (
     <div className={`min-h-screen flex items-center justify-center p-6 ${
-      theme === 'light'
+      theme==='light'
         ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200'
         : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'
     }`}>
@@ -213,67 +196,47 @@ export default function TriviaGamePage() {
         {!showSummary ? (
           <>
             <p className="text-lg mb-2">
-              Round {currentIndex + 1} / {questions.length}
+              Round {currentIndex+1} / {questions.length}
             </p>
             <h1 className="text-4xl font-bold mb-2">What does this word mean?</h1>
             <h2 className="text-6xl font-extrabold mb-6 text-purple-700 dark:text-purple-300" dir="rtl">
               {q.hebrewWord}
             </h2>
             <div className="flex justify-center gap-6 mb-6">
-              <button
-                onClick={() => setShowSentence(true)}
-                className="px-6 py-2 rounded shadow bg-purple-200 hover:bg-purple-300 text-purple-800"
-              >
+              <button onClick={()=>setShowSentence(true)}
+                className="px-6 py-2 rounded shadow bg-purple-200 hover:bg-purple-300 text-purple-800">
                 Show Sentence 📘
               </button>
-              <button
-                onClick={() => setShowEmoji(true)}
-                className="px-6 py-2 rounded shadow bg-yellow-100 hover:bg-yellow-200 text-purple-800"
-              >
+              <button onClick={()=>setShowEmoji(true)}
+                className="px-6 py-2 rounded shadow bg-yellow-100 hover:bg-yellow-200 text-purple-800">
                 Show Emoji 😃
               </button>
             </div>
             {showSentence && <p className="mb-4 italic text-lg">{q.clueSentence}</p>}
-            {showEmoji && <p className="text-4xl mb-6">{q.clueEmoji}</p>}
+            {showEmoji    && <p className="text-4xl mb-6">{q.clueEmoji}</p>}
             <div className="grid grid-cols-2 gap-6">
               {q.options.map(opt => (
-                <button
-                  key={opt}
-                  onClick={() => handleSelect(opt)}
+                <button key={opt} onClick={()=>handleSelect(opt)}
                   className={`w-full py-4 rounded-lg shadow-md text-2xl transition-all ${
                     selected
-                      ? opt === q.options[q.correctIndex]
+                      ? opt===q.options[q.correctIndex]
                         ? 'bg-green-300 text-green-800'
-                        : opt === selected
+                        : opt===selected
                           ? 'bg-red-300 text-red-800'
                           : 'bg-white dark:bg-gray-700 text-purple-800 dark:text-purple-200'
                       : 'bg-white hover:bg-purple-100 dark:bg-gray-700 hover:bg-gray-600 text-purple-800 dark:text-purple-200'
-                  }`}
-                >
+                  }`}>
                   {opt}
                 </button>
               ))}
             </div>
             {selected && (
               <p className="mt-6 text-2xl font-semibold">
-                {selected === q.options[q.correctIndex]
-                  ? "You're Right! ✅"
-                  : "Oops! That's not it ❌"}
+                {selected===q.options[q.correctIndex] ? "You're Right! ✅" : "Oops! That's not it ❌"}
               </p>
             )}
             <p className="mt-4 text-base">Score: {score}</p>
           </>
-        ) : isGuest ? (
-          <div>
-            <h2 className="text-3xl font-bold mb-6">🎮 Want More Games?</h2>
-            <p className="text-xl mb-6">Sign in for full access!</p>
-            <button
-              onClick={() => (window.location.href = '/signin')}
-              className="bg-purple-400 hover:bg-purple-500 text-white px-6 py-3 rounded shadow text-lg"
-            >
-              Sign In / Register
-            </button>
-          </div>
         ) : (
           <div>
             <h2 className="text-4xl font-bold mb-6">🎉 Game Over!</h2>
@@ -281,28 +244,22 @@ export default function TriviaGamePage() {
               Your Score: {score} / {questions.length}
             </p>
             <ul className="text-left text-lg mb-6">
-              {answers.map((a, i) => (
+              {answers.map((a,i)=>(
                 <li key={i} className="flex items-center gap-2 mb-2">
-                  {a.result === 'Correct' ? (
-                    <span className="text-green-500 text-2xl">✅</span>
-                  ) : (
-                    <span className="text-red-500 text-2xl">❌</span>
-                  )}
+                  {a.result==='Correct'
+                    ? <span className="text-green-500 text-2xl">✅</span>
+                    : <span className="text-red-500 text-2xl">❌</span>}
                   <span>You chose {a.selected} – {a.hebrew}</span>
                 </li>
               ))}
             </ul>
             <div className="flex gap-4 justify-center">
-              <button
-                onClick={restart}
-                className="bg-purple-300 hover:bg-purple-400 text-white px-6 py-3 rounded shadow"
-              >
+              <button onClick={restart}
+                className="bg-purple-300 hover:bg-purple-400 text-white px-6 py-3 rounded shadow">
                 Play Again
               </button>
-              <button
-                onClick={() => (window.location.href = '/games')}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded shadow"
-              >
+              <button onClick={()=>window.location.href='/games'}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded shadow">
                 Back to Games
               </button>
             </div>
