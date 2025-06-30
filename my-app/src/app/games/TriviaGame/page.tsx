@@ -155,18 +155,18 @@ export default function TriviaGamePage() {
 
   const restart = () => loadRounds();
 
+  // 6) Loading screen
   if (isLoading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${
-        theme === 'light'
-          ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200'
-          : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'
-      }`}>
+      <div className={`min-h-screen flex items-center justify-center
+        ${theme === 'light'
+          ? 'bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200'
+          : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'}`}>
         <div className="text-center">
           <div className="text-6xl animate-spin mb-4">🌟</div>
-          <div className={`text-xl font-bold ${
-            theme === 'light' ? 'text-purple-800' : 'text-purple-200'
-          }`}>Loading game...</div>
+          <div className={`text-xl font-bold ${theme === 'light' ? 'text-purple-800' : 'text-purple-200'}`}>
+            Loading game...
+          </div>
         </div>
       </div>
     );
@@ -175,68 +175,83 @@ export default function TriviaGamePage() {
   const q = questions[currentIndex];
 
   return (
-    <div className={`min-h-screen flex items-center justify-center p-6 ${
-      theme === 'light'
-        ? 'bg-white/90 text-gray-800' 
-      : 'bg-gray-800/90 text-gray-200'
-    }`}>
-      <div
-        className="max-w-4xl w-full backdrop-blur-md rounded-2xl shadow-2xl p-10 text-center"
-        style={{
-          backgroundColor: theme === 'light'
-            ? 'rgba(255,255,255,0.9)'
-            : 'rgba(31,41,55,0.9)'
-        }}
-      >
+    <div className={`min-h-screen flex items-center justify-center p-6
+      ${theme === 'light'
+        ? 'bg-gradient-to-br from-purple-300 via-pink-200 to-yellow-200 text-purple-800'
+        : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900 text-purple-200'}`}>
+      
+      <div className={`max-w-4xl w-full backdrop-blur-md rounded-2xl shadow-2xl p-10 text-center
+        ${theme === 'light' ? 'bg-white/90' : 'bg-gray-800/90'}`}>
+        
         {!showSummary ? (
           <>
-            <p className="text-lg mb-2">
+            <p className={`text-lg mb-2 ${theme === 'light' ? 'text-purple-700' : 'text-purple-300'}`}>
               Round {currentIndex + 1} / {questions.length}
             </p>
-            <h1 className="text-4xl font-bold mb-2">
+            <h1 className={`text-4xl font-bold mb-2 ${theme === 'light' ? 'text-purple-800' : 'text-purple-200'}`}>
               What does this word mean?
             </h1>
-            <h2
-              className="text-6xl font-extrabold mb-6 text-purple-700 dark:text-purple-300"
-              dir="rtl"
-            >
+            {/* Hebrew word */}
+            <h2 className={`text-6xl font-extrabold mb-6 ${theme === 'light' ? 'text-purple-800' : 'text-purple-200'}`} dir="rtl">
               {q.hebrewWord}
             </h2>
 
             <div className="flex justify-center gap-6 mb-6">
               <button
                 onClick={() => setShowSentence(true)}
-                className="px-6 py-2 rounded shadow bg-purple-200 hover:bg-purple-300 text-black-800"
+                className={`px-6 py-2 rounded-lg shadow-md font-medium transition-all
+                  ${theme === 'light'
+                    ? 'bg-purple-400 hover:bg-purple-500 text-white'
+                    : 'bg-purple-500 hover:bg-purple-600 text-white'}`}
               >
                 Show Sentence 📘
               </button>
               <button
                 onClick={() => setShowEmoji(true)}
-                className="px-6 py-2 rounded shadow bg-yellow-100 hover:bg-yellow-200 text-purple-800"
+                className={`px-6 py-2 rounded-lg shadow-md font-medium transition-all
+                  ${theme === 'light'
+                    ? 'bg-yellow-400 hover:bg-yellow-500 text-purple-900'
+                    : 'bg-yellow-500 hover:bg-yellow-600 text-gray-900'}`}
               >
                 Show Emoji 😃
               </button>
             </div>
+            
             {showSentence && (
-              <p className="mb-4 italic text-lg">{q.clueSentence}</p>
+              <p className={`mb-4 italic text-lg p-4 rounded-lg
+                ${theme === 'light' 
+                  ? 'bg-white/80 text-purple-800 border border-purple-200' 
+                  : 'bg-gray-700/80 text-purple-200 border border-purple-600'}`}>
+                {q.clueSentence}
+              </p>
             )}
+            
             {showEmoji && (
-              <p className="text-4xl mb-6">{q.clueEmoji}</p>
+              <p className={`text-5xl mb-6 p-4 rounded-lg
+                ${theme === 'light' 
+                  ? 'bg-white/80 border border-purple-200' 
+                  : 'bg-gray-700/80 border border-purple-600'}`}>
+                {q.clueEmoji}
+              </p>
             )}
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-4">
               {q.options.map(opt => (
                 <button
                   key={opt}
                   onClick={() => handleSelect(opt)}
-                  className={`w-full py-4 rounded-lg shadow-md text-2xl transition-all ${
+                  className={`w-full py-4 px-4 rounded-lg shadow-md text-xl font-medium transition-all border-2 ${
                     selected
                       ? opt === q.options[q.correctIndex]
-                        ? 'bg-green-300 text-green-800'
+                        ? 'bg-green-300 text-purple-900 border-green-400'
                         : opt === selected
-                          ? 'bg-red-300 text-red-800'
-                          : 'bg-white dark:bg-gray-700 text-purple-800 dark:text-purple-200'
-                      : 'bg-white hover:bg-purple-100 dark:bg-gray-700 hover:bg-gray-600 text-purple-800 dark:text-black-200'
+                          ? 'bg-red-400 text-white border-red-500'
+                          : theme === 'light'
+                            ? 'bg-gray-200 text-gray-500 border-gray-300 opacity-60'
+                            : 'bg-gray-700 text-gray-500 border-gray-600 opacity-60'
+                      : theme === 'light'
+                        ? 'bg-white hover:bg-purple-100 text-purple-800 border-purple-200'
+                        : 'bg-gray-700 hover:bg-purple-800 text-purple-200 border-purple-600'
                   }`}
                 >
                   {opt}
@@ -246,13 +261,13 @@ export default function TriviaGamePage() {
 
             {selected && (
               <>
-                <p className="mt-6 text-2xl font-semibold">
+                <p className={`mt-6 text-2xl font-semibold ${theme === 'light' ? 'text-purple-800' : 'text-purple-200'}`}>
                   {selected === q.options[q.correctIndex]
                     ? "You're Right! ✅"
                     : "Oops! That's not it ❌"}
                 </p>
                 {showEllie && (
-                  <p className="mt-2 text-xl font-medium">
+                  <p className={`mt-2 text-xl font-medium ${theme === 'light' ? 'text-purple-700' : 'text-purple-300'}`}>
                     {ellieCorrect
                       ? "Ellie thinks that was correct! 🎉"
                       : "Ellie thinks that was wrong. 😢"}
@@ -261,34 +276,47 @@ export default function TriviaGamePage() {
               </>
             )}
 
-            <p className="mt-4 text-base">Score: {score}</p>
+            <p className={`mt-4 text-lg font-medium ${theme === 'light' ? 'text-purple-700' : 'text-purple-300'}`}>
+              Score: {score}
+            </p>
           </>
         ) : (
           <div>
-            <h2 className="text-4xl font-bold mb-6">🎉 Game Over!</h2>
-            <p className="text-2xl mb-6">
+            <h2 className={`text-4xl font-bold mb-6 ${theme === 'light' ? 'text-purple-800' : 'text-purple-200'}`}>
+              🎉 Game Over!
+            </h2>
+            <p className={`text-2xl mb-6 ${theme === 'light' ? 'text-purple-800' : 'text-purple-200'}`}>
               Your Score: {score} / {questions.length}
             </p>
-            <ul className="text-left text-lg mb-6">
+            <ul className={`text-left text-lg mb-6 ${theme === 'light' ? 'text-purple-800' : 'text-purple-200'}`}>
               {answers.map((a, i) => (
-                <li key={i} className="flex items-center gap-2 mb-2">
+                <li key={i} className={`flex items-center gap-3 mb-3 p-3 rounded-lg border
+                  ${theme === 'light' 
+                    ? 'bg-white/80 border-purple-200' 
+                    : 'bg-gray-700/80 border-purple-600'}`}>
                   {a.result === 'Correct'
                     ? <span className="text-green-500 text-2xl">✅</span>
                     : <span className="text-red-500 text-2xl">❌</span>}
-                  <span>You chose {a.selected} – {a.hebrew}</span>
+                  <span>You chose <strong>{a.selected}</strong> – <span className={`font-medium ${theme === 'light' ? 'text-purple-600' : 'text-purple-400'}`}>{a.hebrew}</span></span>
                 </li>
               ))}
             </ul>
             <div className="flex gap-4 justify-center">
               <button
                 onClick={restart}
-                className="bg-purple-300 hover:bg-purple-400 text-white px-6 py-3 rounded shadow"
+                className={`px-8 py-3 rounded-lg shadow-lg font-medium transition-all
+                  ${theme === 'light'
+                    ? 'bg-purple-400 hover:bg-purple-500 text-white'
+                    : 'bg-purple-500 hover:bg-purple-600 text-white'}`}
               >
                 Play Again
               </button>
               <button
                 onClick={() => (window.location.href = '/games')}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded shadow"
+                className={`px-8 py-3 rounded-lg shadow-lg font-medium transition-all
+                  ${theme === 'light'
+                    ? 'bg-yellow-400 hover:bg-yellow-500 text-purple-900'
+                    : 'bg-yellow-500 hover:bg-yellow-600 text-gray-900'}`}
               >
                 Back to Games
               </button>
