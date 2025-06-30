@@ -1,13 +1,9 @@
+// src/app/games/TriviaGame/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  serverTimestamp
-} from 'firebase/firestore';
+import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { app } from '@/firebase';
 import { useTheme } from '@/lib/ThemeContext';
 
@@ -66,13 +62,8 @@ export default function TriviaGamePage() {
     });
   }, [auth]);
 
-  // 2) Load rounds on auth ready
-  useEffect(() => {
-    if (authReady) loadRounds();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authReady]);
-
-  async function loadRounds() {
+  // 2) Round loader (stable ref)
+  const loadRounds = useCallback(async () => {
     setIsLoading(true);
     const guest = !auth.currentUser;
     setIsGuest(guest);
@@ -93,7 +84,6 @@ export default function TriviaGamePage() {
         fetched.push({ ...q, options: opts, correctIndex: idx });
       }
       setQuestions(fetched);
-      // reset state
       setCurrentIndex(0);
       setSelected(null);
       setScore(0);
@@ -107,9 +97,14 @@ export default function TriviaGamePage() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [auth]);
 
-  // 3) Handle answer selection
+  // 3) Trigger load when ready
+  useEffect(() => {
+    if (authReady) loadRounds();
+  }, [authReady, loadRounds]);
+
+  // 4) Handle answer selection
   const handleSelect = (choice: string) => {
     if (selected) return;
     const q = questions[currentIndex];
@@ -123,11 +118,7 @@ export default function TriviaGamePage() {
       selected: choice,
       result: isCorrect ? 'Correct' : 'Wrong'
     };
-    setAnswers(prev => {
-      const next = [...prev, entry];
-      console.log('📥 Appended answer:', entry, '→ answers length:', next.length);
-      return next;
-    });
+    setAnswers(prev => [...prev, entry]);
 
     setSelected(choice);
     setEllieCorrect(isCorrect);
@@ -141,11 +132,10 @@ export default function TriviaGamePage() {
         setShowSentence(false);
         setShowEmoji(false);
       }
-      // otherwise let the save-effect below run
     }, 1200);
   };
 
-  // 4) Save when answers array is complete
+  // 5) Save results when done
   useEffect(() => {
     if (
       answers.length > 0 &&
@@ -154,21 +144,12 @@ export default function TriviaGamePage() {
       !isGuest &&
       auth.currentUser
     ) {
-      console.log('📤 Saving all answers to Firestore:', answers);
       setShowSummary(true);
-
       const uid = auth.currentUser.uid;
       addDoc(
         collection(db, 'trivia_results'),
-        {
-          uid,
-          score,
-          answers,
-          createdAt: serverTimestamp()
-        }
-      )
-        .then(docRef => console.log('✅ Trivia saved:', docRef.id))
-        .catch(err => console.error('❌ Save failed:', err));
+        { uid, score, answers, createdAt: serverTimestamp() }
+      );
     }
   }, [answers, questions.length, isGuest, auth.currentUser, score, db]);
 
@@ -177,14 +158,14 @@ export default function TriviaGamePage() {
   if (isLoading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${
-        theme==='light'
+        theme === 'light'
           ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200'
           : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'
       }`}>
         <div className="text-center">
           <div className="text-6xl animate-spin mb-4">🌟</div>
           <div className={`text-xl font-bold ${
-            theme==='light'? 'rgba(255,255,255,0.9)':'rgba(31,41,55,0.9)'
+            theme === 'light' ? 'text-purple-800' : 'text-purple-200'
           }`}>Loading game...</div>
         </div>
       </div>
@@ -195,11 +176,18 @@ export default function TriviaGamePage() {
 
   return (
     <div className={`min-h-screen flex items-center justify-center p-6 ${
-      theme==='light'
-        ? 'bg-gradient-to-br from-pink-200 via-purple-200 to-yellow-200'
-        : 'bg-gradient-to-br from-indigo-900 via-pink-900 to-yellow-900'
+      theme === 'light'
+        ? 'bg-white/90 text-gray-800' 
+      : 'bg-gray-800/90 text-gray-200'
     }`}>
-      <div className="max-w-4xl w-full backdrop-blur-md bg-white/90 dark:bg-gray-800/90 rounded-2xl shadow-2xl p-10 text-center">
+      <div
+        className="max-w-4xl w-full backdrop-blur-md rounded-2xl shadow-2xl p-10 text-center"
+        style={{
+          backgroundColor: theme === 'light'
+            ? 'rgba(255,255,255,0.9)'
+            : 'rgba(31,41,55,0.9)'
+        }}
+      >
         {!showSummary ? (
           <>
             <p className="text-lg mb-2">
@@ -208,13 +196,17 @@ export default function TriviaGamePage() {
             <h1 className="text-4xl font-bold mb-2">
               What does this word mean?
             </h1>
-            <h2 className="text-6xl font-extrabold mb-6 text-purple-700 dark:text-purple-300" dir="rtl">
+            <h2
+              className="text-6xl font-extrabold mb-6 text-purple-700 dark:text-purple-300"
+              dir="rtl"
+            >
               {q.hebrewWord}
             </h2>
+
             <div className="flex justify-center gap-6 mb-6">
               <button
                 onClick={() => setShowSentence(true)}
-                className="px-6 py-2 rounded shadow bg-purple-200 hover:bg-purple-300 text-purple-800"
+                className="px-6 py-2 rounded shadow bg-purple-200 hover:bg-purple-300 text-black-800"
               >
                 Show Sentence 📘
               </button>
@@ -225,8 +217,13 @@ export default function TriviaGamePage() {
                 Show Emoji 😃
               </button>
             </div>
-            {showSentence && <p className="mb-4 italic text-lg">{q.clueSentence}</p>}
-            {showEmoji && <p className="text-4xl mb-6">{q.clueEmoji}</p>}
+            {showSentence && (
+              <p className="mb-4 italic text-lg">{q.clueSentence}</p>
+            )}
+            {showEmoji && (
+              <p className="text-4xl mb-6">{q.clueEmoji}</p>
+            )}
+
             <div className="grid grid-cols-2 gap-6">
               {q.options.map(opt => (
                 <button
@@ -239,13 +236,14 @@ export default function TriviaGamePage() {
                         : opt === selected
                           ? 'bg-red-300 text-red-800'
                           : 'bg-white dark:bg-gray-700 text-purple-800 dark:text-purple-200'
-                      : 'bg-white hover:bg-purple-100 dark:bg-gray-700 hover:bg-gray-600 text-purple-800 dark:text-purple-200'
+                      : 'bg-white hover:bg-purple-100 dark:bg-gray-700 hover:bg-gray-600 text-purple-800 dark:text-black-200'
                   }`}
                 >
                   {opt}
                 </button>
               ))}
             </div>
+
             {selected && (
               <>
                 <p className="mt-6 text-2xl font-semibold">
@@ -262,6 +260,7 @@ export default function TriviaGamePage() {
                 )}
               </>
             )}
+
             <p className="mt-4 text-base">Score: {score}</p>
           </>
         ) : (
