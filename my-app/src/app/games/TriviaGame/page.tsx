@@ -30,7 +30,7 @@ interface AnswerLog {
 const ROUNDS_FOR_SIGNED = 5;
 const ROUNDS_FOR_GUEST  = 3;
 
-// Fisher-Yates shuffle
+// Fisher–Yates shuffle
 function shuffleArray<T>(array: T[]): T[] {
   const a = [...array];
   for (let i = a.length - 1; i > 0; i--) {
@@ -67,7 +67,7 @@ export default function TriviaGamePage() {
     });
   }, [auth]);
 
-  // 2) Load rounds when auth is ready
+  // 2) Load rounds on auth ready
   useEffect(() => {
     if (authReady) loadRounds();
   }, [authReady]);
@@ -109,7 +109,7 @@ export default function TriviaGamePage() {
     }
   }
 
-  // 3) Handle answer tap
+  // 3) Handle answer selection
   const handleSelect = (choice: string) => {
     if (selected) return;
     const q         = questions[currentIndex];
@@ -123,7 +123,11 @@ export default function TriviaGamePage() {
       selected: choice,
       result:   isCorrect ? 'Correct' : 'Wrong'
     };
-    setAnswers(prev => [...prev, entry]);
+    setAnswers(prev => {
+      const next = [...prev, entry];
+      console.log('📥 Appended answer:', entry, '→ answers length:', next.length);
+      return next;
+    });
 
     setSelected(choice);
     setEllieCorrect(isCorrect);
@@ -131,40 +135,42 @@ export default function TriviaGamePage() {
 
     setTimeout(() => {
       setShowEllie(false);
-      // advance unless we’re at last question
       if (currentIndex + 1 < questions.length) {
         setCurrentIndex(i => i + 1);
         setSelected(null);
         setShowSentence(false);
         setShowEmoji(false);
       }
-      // if it *was* the last, answers.length will now === questions.length
+      // otherwise let the save-effect below run
     }, 1200);
   };
 
-  // 4) EXACTLY like your word-match: save when answers complete
+  // 4) Save when answers array is complete
   useEffect(() => {
     if (
-      answers.length &&
-      questions.length &&
-      answers.length === questions.length
+      answers.length > 0 &&
+      questions.length > 0 &&
+      answers.length === questions.length &&
+      !isGuest &&
+      auth.currentUser
     ) {
+      console.log('📤 Saving all answers to Firestore:', answers);
       setShowSummary(true);
 
-      const user = auth.currentUser;
-      if (user) {
-        const payload = {
-          uid:       user.uid,
+      const uid = auth.currentUser.uid;
+      addDoc(
+        collection(db, 'trivia_results'),
+        {
+          uid,
           score,
-          answers,           // full array of 5 logs
+          answers,
           createdAt: serverTimestamp()
-        };
-        addDoc(collection(db, 'trivia_results'), payload)
-          .then(ref => console.log('✅ Saved trivia:', ref.id))
-          .catch(err => console.error('❌ Save error:', err));
-      }
+        }
+      )
+      .then(docRef => console.log('✅ Trivia saved:', docRef.id))
+      .catch(err => console.error('❌ Save failed:', err));
     }
-  }, [answers, questions, score, auth, db]);
+  }, [answers, questions.length, isGuest, auth.currentUser, score, db]);
 
   const restart = () => loadRounds();
 
@@ -197,43 +203,54 @@ export default function TriviaGamePage() {
         {!showSummary ? (
           <>
             <p className="text-lg mb-2">
-              Round {currentIndex+1} / {questions.length}
+              Round {currentIndex + 1} / {questions.length}
             </p>
-            <h1 className="text-4xl font-bold mb-2">What does this word mean?</h1>
+            <h1 className="text-4xl font-bold mb-2">
+              What does this word mean?
+            </h1>
             <h2 className="text-6xl font-extrabold mb-6 text-purple-700 dark:text-purple-300" dir="rtl">
               {q.hebrewWord}
             </h2>
             <div className="flex justify-center gap-6 mb-6">
-              <button onClick={()=>setShowSentence(true)}
-                className="px-6 py-2 rounded shadow bg-purple-200 hover:bg-purple-300 text-purple-800">
+              <button
+                onClick={() => setShowSentence(true)}
+                className="px-6 py-2 rounded shadow bg-purple-200 hover:bg-purple-300 text-purple-800"
+              >
                 Show Sentence 📘
               </button>
-              <button onClick={()=>setShowEmoji(true)}
-                className="px-6 py-2 rounded shadow bg-yellow-100 hover:bg-yellow-200 text-purple-800">
+              <button
+                onClick={() => setShowEmoji(true)}
+                className="px-6 py-2 rounded shadow bg-yellow-100 hover:bg-yellow-200 text-purple-800"
+              >
                 Show Emoji 😃
               </button>
             </div>
             {showSentence && <p className="mb-4 italic text-lg">{q.clueSentence}</p>}
-            {showEmoji    && <p className="text-4xl mb-6">{q.clueEmoji}</p>}
+            {showEmoji && <p className="text-4xl mb-6">{q.clueEmoji}</p>}
             <div className="grid grid-cols-2 gap-6">
               {q.options.map(opt => (
-                <button key={opt} onClick={()=>handleSelect(opt)}
+                <button
+                  key={opt}
+                  onClick={() => handleSelect(opt)}
                   className={`w-full py-4 rounded-lg shadow-md text-2xl transition-all ${
                     selected
-                      ? opt===q.options[q.correctIndex]
+                      ? opt === q.options[q.correctIndex]
                         ? 'bg-green-300 text-green-800'
-                        : opt===selected
+                        : opt === selected
                           ? 'bg-red-300 text-red-800'
                           : 'bg-white dark:bg-gray-700 text-purple-800 dark:text-purple-200'
                       : 'bg-white hover:bg-purple-100 dark:bg-gray-700 hover:bg-gray-600 text-purple-800 dark:text-purple-200'
-                  }`}>
+                  }`}
+                >
                   {opt}
                 </button>
               ))}
             </div>
             {selected && (
               <p className="mt-6 text-2xl font-semibold">
-                {selected===q.options[q.correctIndex] ? "You're Right! ✅" : "Oops! That's not it ❌"}
+                {selected === q.options[q.correctIndex]
+                  ? "You're Right! ✅"
+                  : "Oops! That's not it ❌"}
               </p>
             )}
             <p className="mt-4 text-base">Score: {score}</p>
@@ -245,9 +262,9 @@ export default function TriviaGamePage() {
               Your Score: {score} / {questions.length}
             </p>
             <ul className="text-left text-lg mb-6">
-              {answers.map((a,i)=>(
+              {answers.map((a, i) => (
                 <li key={i} className="flex items-center gap-2 mb-2">
-                  {a.result==='Correct'
+                  {a.result === 'Correct'
                     ? <span className="text-green-500 text-2xl">✅</span>
                     : <span className="text-red-500 text-2xl">❌</span>}
                   <span>You chose {a.selected} – {a.hebrew}</span>
@@ -255,12 +272,16 @@ export default function TriviaGamePage() {
               ))}
             </ul>
             <div className="flex gap-4 justify-center">
-              <button onClick={restart}
-                className="bg-purple-300 hover:bg-purple-400 text-white px-6 py-3 rounded shadow">
+              <button
+                onClick={restart}
+                className="bg-purple-300 hover:bg-purple-400 text-white px-6 py-3 rounded shadow"
+              >
                 Play Again
               </button>
-              <button onClick={()=>window.location.href='/games'}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded shadow">
+              <button
+                onClick={() => (window.location.href = '/games')}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-3 rounded shadow"
+              >
                 Back to Games
               </button>
             </div>
