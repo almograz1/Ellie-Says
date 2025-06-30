@@ -30,6 +30,7 @@ interface AnswerLog {
 const ROUNDS_FOR_SIGNED = 5;
 const ROUNDS_FOR_GUEST  = 3;
 
+// Fisher-Yates shuffle
 function shuffleArray<T>(array: T[]): T[] {
   const a = [...array];
   for (let i = a.length - 1; i > 0; i--) {
@@ -58,7 +59,7 @@ export default function TriviaGamePage() {
   const [ellieCorrect, setEllieCorrect] = useState(false);
   const [authReady,    setAuthReady]    = useState(false);
 
-  // 1. Auth listener
+  // 1) Auth listener
   useEffect(() => {
     return onAuthStateChanged(auth, user => {
       setIsGuest(!user);
@@ -66,7 +67,7 @@ export default function TriviaGamePage() {
     });
   }, [auth]);
 
-  // 2. Load rounds when auth is ready
+  // 2) Load rounds when auth is ready
   useEffect(() => {
     if (authReady) loadRounds();
   }, [authReady]);
@@ -92,6 +93,7 @@ export default function TriviaGamePage() {
         fetched.push({ ...q, options: opts, correctIndex: idx });
       }
       setQuestions(fetched);
+      // reset state
       setCurrentIndex(0);
       setSelected(null);
       setScore(0);
@@ -107,7 +109,7 @@ export default function TriviaGamePage() {
     }
   }
 
-  // 3. Handle answer selection
+  // 3) Handle answer tap
   const handleSelect = (choice: string) => {
     if (selected) return;
     const q         = questions[currentIndex];
@@ -121,49 +123,48 @@ export default function TriviaGamePage() {
       selected: choice,
       result:   isCorrect ? 'Correct' : 'Wrong'
     };
-
     setAnswers(prev => [...prev, entry]);
+
     setSelected(choice);
     setEllieCorrect(isCorrect);
     setShowEllie(true);
 
     setTimeout(() => {
       setShowEllie(false);
+      // advance unless we’re at last question
       if (currentIndex + 1 < questions.length) {
         setCurrentIndex(i => i + 1);
         setSelected(null);
         setShowSentence(false);
         setShowEmoji(false);
       }
-      // otherwise, let the save useEffect trigger
+      // if it *was* the last, answers.length will now === questions.length
     }, 1200);
   };
 
-  // 4. Save once all answers are collected
+  // 4) EXACTLY like your word-match: save when answers complete
   useEffect(() => {
     if (
-      authReady &&
-      !isGuest &&
-      auth.currentUser &&
-      questions.length > 0 &&
+      answers.length &&
+      questions.length &&
       answers.length === questions.length
     ) {
       setShowSummary(true);
-      const uid       = auth.currentUser.uid;
-      const dbAnswers = answers.map(a => ({
-        hebrew:   a.hebrew,
-        correct:  a.correct,
-        selected: a.selected,
-        result:   a.result
-      }));
-      addDoc(
-        collection(db, 'trivia_results'),
-        { uid, score, answers: dbAnswers, createdAt: serverTimestamp() }
-      )
-      .then(docRef => console.log('✅ Saved trivia results:', docRef.id))
-      .catch(err => console.error('❌ Error saving trivia results:', err));
+
+      const user = auth.currentUser;
+      if (user) {
+        const payload = {
+          uid:       user.uid,
+          score,
+          answers,           // full array of 5 logs
+          createdAt: serverTimestamp()
+        };
+        addDoc(collection(db, 'trivia_results'), payload)
+          .then(ref => console.log('✅ Saved trivia:', ref.id))
+          .catch(err => console.error('❌ Save error:', err));
+      }
     }
-  }, [answers, questions.length, authReady, isGuest, auth.currentUser, score, db]);
+  }, [answers, questions, score, auth, db]);
 
   const restart = () => loadRounds();
 
