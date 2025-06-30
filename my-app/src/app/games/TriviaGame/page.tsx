@@ -69,7 +69,6 @@ export default function TriviaGamePage() {
   // 2) Load rounds on auth ready
   useEffect(() => {
     if (authReady) loadRounds();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authReady]);
 
   async function loadRounds() {
