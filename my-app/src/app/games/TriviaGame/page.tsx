@@ -183,7 +183,7 @@ export default function TriviaGamePage() {
         <div className="text-center">
           <div className="text-6xl animate-spin mb-4">🌟</div>
           <div className={`text-xl font-bold ${
-            theme==='light'?'text-purple-800':'text-purple-200'
+            theme==='light'? 'rgba(255,255,255,0.9)':'rgba(31,41,55,0.9)'
           }`}>Loading game...</div>
         </div>
       </div>
