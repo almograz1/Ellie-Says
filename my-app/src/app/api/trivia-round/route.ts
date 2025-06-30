@@ -19,6 +19,7 @@ const prompt = `
 Return ONLY raw JSON — no markdown, no text, no triple back-ticks — with this exact shape:
 {
   "hebrewWord": "...",                         // Hebrew noun with nikud
+  "transliteration": "...",                    // Transliteration of the Hebrew word into English
   "options": ["...", "...", "...", "..."],     // 4 English words(without nikud)
   "correctIndex": 0,                           // 0-3 (index of correct option)
   "clueSentence": "...",                       // Hebrew sentence using the word
@@ -42,6 +43,7 @@ Prompt freshness: ${Date.now()}
 
     const data = safeJson<{
       hebrewWord: string;
+      transliteration?: string;
       options: string[];
       correctIndex: number;
       clueSentence: string;
@@ -58,6 +60,9 @@ Prompt freshness: ${Date.now()}
     ) {
       throw new Error("Bad JSON");
     }
+
+    data.hebrewWord = `${data.hebrewWord} (${data.transliteration})`;
+    delete data['transliteration'];
 
     return NextResponse.json(data);      // success 🎉
   } catch (err) {
