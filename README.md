@@ -97,22 +97,56 @@ npm run dev
 
 ## 🖼️ Screenshots
 
-![main_menu](https://github.com/user-attachments/assets/990f8e5c-162a-4c1e-9e0d-803c16b447a4)
-![game_menu](https://github.com/user-attachments/assets/2732edcb-5ba4-4f3c-bbcb-3425a968412f)
-![word_match_game](https://github.com/user-attachments/assets/741a5ead-38d9-4a8b-bedb-58f12069c133)
-![hebrew_trivia_challenge](https://github.com/user-attachments/assets/849e0d68-6514-447e-9560-927048ecf944)
-![image_word](https://github.com/user-attachments/assets/a2e9e806-6007-4d7a-b5b0-45367b22a1c4)
-![translate_page](https://github.com/user-attachments/assets/234506ed-3618-43e7-b679-cd8271d11aac)
-
-
-
-
-
-
-
-| Game Modes                                                        | Translation                                                           | Profile                                                          |
-| ----------------------------------------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| ![game](https://via.placeholder.com/200x120.png?text=Trivia+Game) | ![translate](https://via.placeholder.com/200x120.png?text=Translator) | ![profile](https://via.placeholder.com/200x120.png?text=Profile) |
+<table width="100%">
+  <tr>
+    <td align="center" width="50%">
+      <img src="https://github.com/user-attachments/assets/990f8e5c-162a-4c1e-9e0d-803c16b447a4" width="90%"/>
+      <br/>
+      <b>Main Menu</b>
+    </td>
+    <td align="center" width="50%">
+      <img src="https://github.com/user-attachments/assets/2732edcb-5ba4-4f3c-bbcb-3425a968412f" width="90%"/>
+      <br/>
+      <b>Game Mode Selection</b>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="https://github.com/user-attachments/assets/741a5ead-38d9-4a8b-bedb-58f12069c133" width="90%"/>
+      <br/>
+      <b>Word Match Game</b>
+    </td>
+    <td align="center" width="50%">
+      <img src="https://github.com/user-attachments/assets/849e0d68-6514-447e-9560-927048ecf944" width="90%"/>
+      <br/>
+      <b>Hebrew Trivia Challenge</b>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="https://github.com/user-attachments/assets/a2e9e806-6007-4d7a-b5b0-45367b22a1c4" width="90%"/>
+      <br/>
+      <b>Photo Word Game</b>
+    </td>
+    <td align="center" width="50%">
+      <img src="https://github.com/user-attachments/assets/234506ed-3618-43e7-b679-cd8271d11aac" width="90%"/>
+      <br/>
+      <b>Translation Page</b>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" width="50%">
+      <img src="https://github.com/user-attachments/assets/a15e4281-2934-4ef0-861f-9d267598cc3f" width="90%"/>
+      <br/>
+      <b>My Profile</b>
+    </td>
+    <td align="center" width="50%">
+      <img src="https://github.com/user-attachments/assets/02f8a9dc-7b37-4338-a858-606ab03eb71f" width="90%"/>
+      <br/>
+      <b>Achievements</b>
+    </td>
+  </tr>
+</table>
 
 ---
 
@@ -120,84 +154,83 @@ npm run dev
 
 This project is developed by:
 
-<table>
-    <table>
-        <tr>
-            <td><b>Almog Raz</b></td>
-            <td>
-                <a href="https://www.linkedin.com/in/almog-raz/">
-                    <img src="https://img.shields.io/badge/LinkedIn-Profile-blue?style=flat&logo=linkedin" alt="LinkedIn" height="24"/>
-                </a>
-            </td>
-            <td>
-                <a href="https://github.com/almograz1">
-                    <img src="https://img.shields.io/badge/GitHub-Profile-black?style=flat&logo=github" alt="GitHub" height="24"/>
-                </a>
-            </td>
-        </tr>
-        <tr>
-            <td><b>Ron Salama</b></td>
-            <td>
-                <a href="https://www.linkedin.com/in/ron-salama-3860a0107/">
-                    <img src="https://img.shields.io/badge/LinkedIn-Profile-blue?style=flat&logo=linkedin" alt="LinkedIn" height="24"/>
-                </a>
-            </td>
-            <td>
-                <a href="https://github.com/RS-OG">
-                    <img src="https://img.shields.io/badge/GitHub-Profile-black?style=flat&logo=github" alt="GitHub" height="24"/>
-                </a>
-            </td>
-        </tr>
-        <tr>
-            <td><b>Yaniv Bodaga</b></td>
-            <td>
-                <a href="https://www.linkedin.com/in/yaniv-bodaga/">
-                    <img src="https://img.shields.io/badge/LinkedIn-Profile-blue?style=flat&logo=linkedin" alt="LinkedIn" height="24"/>
-                </a>
-            </td>
-            <td>
-                <a href="https://github.com/yaniv99">
-                    <img src="https://img.shields.io/badge/GitHub-Profile-black?style=flat&logo=github" alt="GitHub" height="24"/>
-                </a>
-            </td>
-        </tr>
-        <tr>
-            <td><b>Yuval Kogan</b></td>
-            <td>
-                <a href="https://www.linkedin.com/in/yuval-kogan">
-                    <img src="https://img.shields.io/badge/LinkedIn-Profile-blue?style=flat&logo=linkedin" alt="LinkedIn" height="24"/>
-                </a>
-            </td>
-            <td>
-                <a href="https://github.com/KoganTheDev">
-                    <img src="https://img.shields.io/badge/GitHub-Profile-black?style=flat&logo=github" alt="GitHub" height="24"/>
-                </a>
-            </td>
-        </tr>
-        <tr>
-            <td><b>Daniel Lachmakov</b></td>
-            <td>
-                <a href="https://www.linkedin.com/in/daniel-lachmakov-94761b288/">
-                    <img src="https://img.shields.io/badge/LinkedIn-Profile-blue?style=flat&logo=linkedin" alt="LinkedIn" height="24"/>
-                </a>
-            </td>
-            <td>
-                <a href="https://github.com/Danielon05423">
-                    <img src="https://img.shields.io/badge/GitHub-Profile-black?style=flat&logo=github" alt="GitHub" height="24"/>
-                </a>
-            </td>
-        </tr>
-        <tr>
-            <td><b>Lior Dagash</b></td>
-            <td>
-                <a href="https://www.linkedin.com/in/lior-dagash-53130333a/">
-                    <img src="https://img.shields.io/badge/LinkedIn-Profile-blue?style=flat&logo=linkedin" alt="LinkedIn" height="24"/>
-                </a>
-            </td>
-            <td>
-                <a href="https://github.com/iMianite">
-                    <img src="https://img.shields.io/badge/GitHub-Profile-black?style=flat&logo=github" alt="GitHub" height="24"/>
-                </a>
-            </td>
-        </tr>
-    </table>
+<table width="100%">
+  <tr>
+    <td><b>Almog Raz</b></td>
+    <td>
+      <a href="https://www.linkedin.com/in/almog-raz/">
+        <img src="https://img.shields.io/badge/LinkedIn-Profile-blue?style=flat&logo=linkedin" alt="LinkedIn" height="24"/>
+      </a>
+    </td>
+    <td>
+      <a href="https://github.com/almograz1">
+        <img src="https://img.shields.io/badge/GitHub-Profile-black?style=flat&logo=github" alt="GitHub" height="24"/>
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td><b>Ron Salama</b></td>
+    <td>
+      <a href="https://www.linkedin.com/in/ron-salama-3860a0107/">
+        <img src="https://img.shields.io/badge/LinkedIn-Profile-blue?style=flat&logo=linkedin" alt="LinkedIn" height="24"/>
+      </a>
+    </td>
+    <td>
+      <a href="https://github.com/RS-OG">
+        <img src="https://img.shields.io/badge/GitHub-Profile-black?style=flat&logo=github" alt="GitHub" height="24"/>
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td><b>Yaniv Bodaga</b></td>
+    <td>
+      <a href="https://www.linkedin.com/in/yaniv-bodaga/">
+        <img src="https://img.shields.io/badge/LinkedIn-Profile-blue?style=flat&logo=linkedin" alt="LinkedIn" height="24"/>
+      </a>
+    </td>
+    <td>
+      <a href="https://github.com/yaniv99">
+        <img src="https://img.shields.io/badge/GitHub-Profile-black?style=flat&logo=github" alt="GitHub" height="24"/>
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td><b>Yuval Kogan</b></td>
+    <td>
+      <a href="https://www.linkedin.com/in/yuval-kogan">
+        <img src="https://img.shields.io/badge/LinkedIn-Profile-blue?style=flat&logo=linkedin" alt="LinkedIn" height="24"/>
+      </a>
+    </td>
+    <td>
+      <a href="https://github.com/KoganTheDev">
+        <img src="https://img.shields.io/badge/GitHub-Profile-black?style=flat&logo=github" alt="GitHub" height="24"/>
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td><b>Daniel Lachmakov</b></td>
+    <td>
+      <a href="https://www.linkedin.com/in/daniel-lachmakov-94761b288/">
+        <img src="https://img.shields.io/badge/LinkedIn-Profile-blue?style=flat&logo=linkedin" alt="LinkedIn" height="24"/>
+      </a>
+    </td>
+    <td>
+      <a href="https://github.com/Danielon05423">
+        <img src="https://img.shields.io/badge/GitHub-Profile-black?style=flat&logo=github" alt="GitHub" height="24"/>
+      </a>
+    </td>
+  </tr>
+  <tr>
+    <td><b>Lior Dagash</b></td>
+    <td>
+      <a href="https://www.linkedin.com/in/lior-dagash-53130333a/">
+        <img src="https://img.shields.io/badge/LinkedIn-Profile-blue?style=flat&logo=linkedin" alt="LinkedIn" height="24"/>
+      </a>
+    </td>
+    <td>
+      <a href="https://github.com/iMianite">
+        <img src="https://img.shields.io/badge/GitHub-Profile-black?style=flat&logo=github" alt="GitHub" height="24"/>
+      </a>
+    </td>
+  </tr>
+</table>
