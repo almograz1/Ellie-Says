@@ -2,30 +2,7 @@
 
 ![React](https://img.shields.io/badge/Built%20with-React-blue) ![Next.js](https://img.shields.io/badge/Framework-Next.js-black?logo=next.js&logoColor=white) ![TailwindCSS](https://img.shields.io/badge/Styled%20with-TailwindCSS-teal) ![Firebase](https://img.shields.io/badge/Backend-Firebase-orange) ![AI-Powered](https://img.shields.io/badge/AI-Google%20Gemini-yellow)
 
-<div align="left" style="display: flex; align-items: flex-start; gap: 16px;">
-
-  <img src="my-app/public/Ellie_icon.png" alt="Ellie-Says logo" width="150" style="margin-top: 8px;"/>
-
-  <div style="
-    background: #f0f4fa;
-    border-radius: 18px 18px 18px 0;
-    padding: 16px 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    font-size: 1.08em;
-    color: #222;
-    max-width: 420px;
-    position: relative;
-    margin-left: 0;
-    ">
-    <span style="font-size: 1.1em;">
-      “Ellie Says” is more than just a phrase - it's a <b>personal language coach</b> powered by games, AI, and your motivation 🐘
-    </span>
-    <svg width="16" height="24" viewBox="0 0 16 24" style="position: absolute; left: -16px; top: 24px;">
-      <polygon points="0,12 16,0 16,24" fill="#f0f4fa"/>
-    </svg>
-  </div>
-
-</div>
+“Ellie Says” is more than just a phrase - it's a <b>personal language coach</b> powered by games, AI, and your motivation 🐘
 
 ## 🧠 Overview
 **Ellie Says** is an interactive web application that makes learning **Hebrew** engaging, effective, and enjoyable. Through a series of **gamified lessons**, real-time **AI translations**, and **personal progress tracking**, learners of all levels can build vocabulary and master essential phrases.
@@ -119,6 +96,19 @@ npm run dev
 ---
 
 ## 🖼️ Screenshots
+
+![main_menu](https://github.com/user-attachments/assets/990f8e5c-162a-4c1e-9e0d-803c16b447a4)
+![game_menu](https://github.com/user-attachments/assets/2732edcb-5ba4-4f3c-bbcb-3425a968412f)
+![word_match_game](https://github.com/user-attachments/assets/741a5ead-38d9-4a8b-bedb-58f12069c133)
+![hebrew_trivia_challenge](https://github.com/user-attachments/assets/849e0d68-6514-447e-9560-927048ecf944)
+![image_word](https://github.com/user-attachments/assets/a2e9e806-6007-4d7a-b5b0-45367b22a1c4)
+![translate_page](https://github.com/user-attachments/assets/234506ed-3618-43e7-b679-cd8271d11aac)
+
+
+
+
+
+
 
 | Game Modes                                                        | Translation                                                           | Profile                                                          |
 | ----------------------------------------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------- |
