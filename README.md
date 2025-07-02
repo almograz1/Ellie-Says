@@ -7,6 +7,8 @@
 ## 🧠 Overview
 **Ellie Says** is an interactive web application that makes learning **Hebrew** engaging, effective, and enjoyable. Through a series of **gamified lessons**, real-time **AI translations**, and **personal progress tracking**, learners of all levels can build vocabulary and master essential phrases.
 
+🎬 [Watch Ellie Says Commercial on Youtube](https://youtu.be/vfGoi8GQtI8)
+
 ---
 
 ## ✨ Features
